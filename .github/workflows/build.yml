@@ -99,7 +99,10 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: hltb-for-deck
-                  path: "*.zip, *.tar.gz"
+                  path:  |
+                    hltb-for-deck.zip
+                    hltb-for-deck.tar.gz
+                  if-no-files-found: error
 
     release:
         runs-on: ubuntu-latest
