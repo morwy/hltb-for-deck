@@ -50,24 +50,15 @@ jobs:
           config: cliff.toml
           args: --verbose --tag ${{ steps.increment-npm-version.outputs.v-version }}
         env:
-          OUTPUT: ${{ github.workspace }}/CHANGELOG.md
+          OUTPUT: CHANGELOG.md
 
       - name: Commit CHANGELOG.md and package.json
         id: change-log-commit
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FILE_TO_COMMIT: ${{ github.workspace }}/CHANGELOG.md, ${{ github.workspace }}/package.json
-          DESTINATION_BRANCH: ${{ steps.read_branch.outputs.branch_name }}
-          MESSAGE: "chore(release): preparing for upcoming release (CHANGELOG.md, package.json)"
-        run: |
-          export SHA=$( git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT )
-          export CONTENT=$( base64 -i $FILE_TO_COMMIT )
-          gh api --method PUT /repos/:owner/:repo/contents/$FILE_TO_COMMIT \
-            --field message="$MESSAGE" \
-            --field content="$CONTENT" \
-            --field encoding="base64" \
-            --field branch="$DESTINATION_BRANCH" \
-            --field sha="$SHA"
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          file_pattern: 'CHANGELOG.md package.json'
+          branch: ${{ steps.read_branch.outputs.branch_name }}
+          commit_message: "chore(release): preparing for upcoming release (CHANGELOG.md, package.json)"
 
     build:
         runs-on: ubuntu-latest
