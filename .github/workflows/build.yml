@@ -9,7 +9,7 @@ jobs:
       permissions:
           contents: write
       outputs:
-        NEW_TAG_NAME: ${{ steps.increment-npm-version.outputs.version }}
+        NEW_TAG_NAME: ${{ steps.increment-npm-version.outputs.v-version }}
         RELEASE_ENTRY_TEXT: ${{ steps.git-cliff-release-entry.outputs.content }}
 
       steps:
@@ -21,10 +21,6 @@ jobs:
         id: read_branch
         shell: bash
         run: echo "branch_name=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-          
-      - name: Get npm version from package.json
-        id: get-npm-version
-        uses: martinbeentjes/npm-get-version-action@v1.3.1
 
       - name: Increment npm version
         uses: reecetech/version-increment@2024.10.1
@@ -33,17 +29,17 @@ jobs:
           scheme: semver
           increment: patch
 
-      - name: 'Write incremented version to package.json'
+      - name: Write incremented version to package.json
         uses: reedyuk/npm-version@1.1.1
         with:
-          version: ${{ steps.increment-npm-version.outputs.version }} 
+          version: ${{ steps.increment-npm-version.outputs.v-version }} 
 
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v4
         id: git-cliff-release-entry
         with:
           config: cliff.toml
-          args: --verbose --strip all --tag v${{ steps.increment-npm-version.outputs.version }} --unreleased
+          args: --verbose --strip all --tag v${{ steps.increment-npm-version.outputs.v-version }} --unreleased
         env:
           OUTPUT: CHANGES.md
 
@@ -52,7 +48,7 @@ jobs:
         id: git-cliff-file
         with:
           config: cliff.toml
-          args: --verbose --tag v${{ steps.increment-npm-version.outputs.version }}
+          args: --verbose --tag v${{ steps.increment-npm-version.outputs.v-version }}
         env:
           OUTPUT: CHANGELOG.md
 
