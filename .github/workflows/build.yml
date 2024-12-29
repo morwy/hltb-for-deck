@@ -87,6 +87,7 @@ jobs:
                   cp plugin.json ./dist/
                   cp package.json ./dist/
                   mkdir ./dist/dist
+                  rm ./dist/index.js.map
                   mv ./dist/index.js ./dist/dist/
                   mv ./dist ./hltb-for-deck
 
@@ -126,5 +127,5 @@ jobs:
               uses: ncipollo/release-action@v1
               with:
                 body: "${{ needs.increment-version.outputs.RELEASE_ENTRY_TEXT }}"
-                tag: "v${{ needs.increment-version.outputs.NEW_TAG_NAME }}"
+                tag: "${{ needs.increment-version.outputs.NEW_TAG_NAME }}"
                 artifacts: "*.zip, *.tar.gz"
