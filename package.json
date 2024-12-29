@@ -1,6 +1,6 @@
 {
     "name": "hltb-for-deck",
-    "version": "2.0.2",
+    "version": "2.0.2-pre.11415fe",
     "description": "A plugin to show you game lengths according to How Long To Beat",
     "type": "module",
     "scripts": {
