@@ -32,14 +32,14 @@ jobs:
       - name: Write incremented version to package.json
         uses: reedyuk/npm-version@1.1.1
         with:
-          version: ${{ steps.increment-npm-version.outputs.v-version }} 
+          version: ${{ steps.increment-npm-version.outputs.version }} 
 
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v4
         id: git-cliff-release-entry
         with:
           config: cliff.toml
-          args: --verbose --strip all --tag v${{ steps.increment-npm-version.outputs.v-version }} --unreleased
+          args: --verbose --strip all --tag ${{ steps.increment-npm-version.outputs.v-version }} --unreleased
         env:
           OUTPUT: CHANGES.md
 
@@ -48,15 +48,15 @@ jobs:
         id: git-cliff-file
         with:
           config: cliff.toml
-          args: --verbose --tag v${{ steps.increment-npm-version.outputs.v-version }}
+          args: --verbose --tag ${{ steps.increment-npm-version.outputs.v-version }}
         env:
-          OUTPUT: CHANGELOG.md
+          OUTPUT: ${{ github.workspace }}/CHANGELOG.md
 
       - name: Commit CHANGELOG.md and package.json
         id: change-log-commit
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FILE_TO_COMMIT: CHANGELOG.md, package.json
+          FILE_TO_COMMIT: ${{ github.workspace }}/CHANGELOG.md, ${{ github.workspace }}/package.json
           DESTINATION_BRANCH: ${{ steps.read_branch.outputs.branch_name }}
           MESSAGE: "chore(release): preparing for upcoming release (CHANGELOG.md, package.json)"
         run: |
