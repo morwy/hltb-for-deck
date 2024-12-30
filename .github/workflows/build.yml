@@ -31,7 +31,7 @@ jobs:
           increment: patch
 
       - name: Write incremented version to package.json
-        uses: reedyuk/npm-version@1.1.1
+        uses: reedyuk/npm-version@1.2.2
         with:
           version: ${{ steps.increment-npm-version.outputs.version }} 
 
