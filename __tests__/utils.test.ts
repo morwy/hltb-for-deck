@@ -15,5 +15,8 @@ describe('Other functions', () => {
             'world end economica episode.01'
         );
         expect(normalize('NieR:Automata™')).toBe('nier:automata');
+        expect(normalize('Never Alone (Kisima Ingitchuna)')).toBe(
+            'never alone (kisima ingitchuna)'
+        );
     });
 });
