@@ -10,6 +10,7 @@ import {
 
 // NOTE: Close reproduction of https://github.com/ScrappyCocco/HowLongToBeat-PythonAPI/pull/26
 const SearchKey = Symbol('Search Key');
+let searchApiRoot: string = '';
 async function fetchSearchKey() {
     try {
         const url = 'https://howlongtobeat.com';
@@ -29,10 +30,15 @@ async function fetchSearchKey() {
                     if (scriptResponse.status === 200) {
                         const scriptText = await scriptResponse.text();
                         const pattern =
-                            /\/api\/lookup\/"\.concat\("([a-zA-Z0-9]+)"\)\.concat\("([a-zA-Z0-9]+)"\)/;
+                            /\/api\/[a-zA-Z]*\/"\.concat\("([a-zA-Z0-9]+)"\)\.concat\("([a-zA-Z0-9]+)"\)/;
                         const matches = scriptText.match(pattern);
 
                         if (matches && matches[1]) {
+                            // dynamically retrieving the root of the HLBT search URL from the script
+                            // Should work if {search-api} changes, assuming the overall pattern stays the same (i.e: "api/{search-api}/".concat(...).concat(...)")
+                            searchApiRoot = matches[0]
+                                .split('.')[0]
+                                .slice(0, -1);
                             const apiKey = `${matches[1]}${matches[2]}`;
                             console.log('HLTB API Key:', apiKey);
                             return apiKey;
@@ -157,7 +163,7 @@ async function fetchSearchResultsWithKey(gameName: string, apiKey: string) {
         },
     };
 
-    return fetchNoCors(`https://howlongtobeat.com/api/lookup/${apiKey}`, {
+    return fetchNoCors(`https://howlongtobeat.com/${searchApiRoot}${apiKey}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
