@@ -7,7 +7,7 @@ A plugin to show you game lengths according to How Long To Beat.
 Built with [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader).
 
 > [!IMPORTANT]  
-> Please note that HLTB does not have an official public API. This plugin (and this fork in particular) is heavily depending on the API changes discovered and implemented in [HowLongToBeat-PythonAPI repository](https://github.com/ScrappyCocco/HowLongToBeat-PythonAPI). Every change done to API by HLTB breaks this plugin workability. Unfortunately, there may and will be delays in restoring the plugin workability.
+> Please note that HLTB does not have an official public API. This plugin (and this fork in particular) is heavily depending on the API changes discovered and implemented in [HowLongToBeat-PythonAPI repository](https://github.com/ScrappyCocco/HowLongToBeat-PythonAPI). Every change done to API by HLTB might break this plugin workability. Unfortunately, there may and will be delays in restoring the plugin workability. However, recent changes were implemented to mitigate changes in the HLTB API and try to get the API name dynamically, bypassing the need for manual changes and a new version if possible.
 
 > [!IMPORTANT]  
 > This fork is not currently available in **Decky Store** because it was not authorized yet by the previous maintainer. Due to this users have to install releases manually. Please refer to the chapter **Manual installation in Decky** below.
