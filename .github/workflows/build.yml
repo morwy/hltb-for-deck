@@ -14,7 +14,7 @@ jobs:
         RELEASE_ENTRY_TEXT: ${{ steps.git-cliff-release-entry.outputs.content }}
 
       steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -69,7 +69,7 @@ jobs:
         needs: [increment-version]
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v5
               with:
                 ref: ${{ needs.increment-version.outputs.BRANCH_NAME }}
                 fetch-depth: 0
@@ -121,7 +121,7 @@ jobs:
         needs: [increment-version, build]
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
 
             - name: Downloading all built binaries
               uses: actions/download-artifact@v5
