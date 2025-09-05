@@ -78,7 +78,7 @@ jobs:
               run: git pull origin ${{ needs.increment-version.outputs.BRANCH_NAME }}
 
             - name: Setup node
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v5
               with:
                   node-version: '18.12'
 
