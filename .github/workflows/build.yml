@@ -106,7 +106,7 @@ jobs:
                   tar -czvf hltb-for-deck.tar.gz hltb-for-deck
             
             - name: Upload artifacts
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v5
               with:
                   name: hltb-for-deck
                   path:  |
