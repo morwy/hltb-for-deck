@@ -21,11 +21,11 @@ importers:
         specifier: ^1.10.0
         version: 1.10.0
       react:
-        specifier: ^18.2.0
-        version: 18.2.0
+        specifier: ^19.2.0
+        version: 19.2.0
       react-icons:
         specifier: ^4.12.0
-        version: 4.12.0(react@18.2.0)
+        version: 4.12.0(react@19.2.0)
     devDependencies:
       '@commitlint/cli':
         specifier: ^17.8.1
@@ -1880,7 +1880,7 @@ packages:
   react-is@18.3.1:
     resolution: {integrity: sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==}
 
-  react@18.2.0:
+  react@19.2.0:
     resolution: {integrity: sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==}
     engines: {node: '>=0.10.0'}
 
@@ -4377,13 +4377,13 @@ snapshots:
 
   quick-lru@4.0.1: {}
 
-  react-icons@4.12.0(react@18.2.0):
+  react-icons@4.12.0(react@19.2.0):
     dependencies:
-      react: 18.2.0
+      react: 19.2.0
 
   react-is@18.3.1: {}
 
-  react@18.2.0:
+  react@19.2.0:
     dependencies:
       loose-envify: 1.4.0
 
