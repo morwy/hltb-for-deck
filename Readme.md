@@ -2,8 +2,11 @@
 
 ## Description
 
-A plugin to show you game lengths according to How Long To Beat.
-Built with [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader).
+A plugin to show you game lengths according to How Long To Beat. Built with [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader).
+
+Currently this is an actively maintained fork of [original HLTB for Deck plugin](https://github.com/hulkrelax/hltb-for-deck).
+[hulkrelax](https://github.com/hulkrelax) is the original author of the plugin. Cheers and huge thanks to [safijari](https://github.com/safijari) / [SDH-Stewardship](https://github.com/SDH-Stewardship) for maintaining the plugin for a long time before this fork.
+
 
 > [!IMPORTANT]  
 > Please note that HLTB does not have an official public API. This plugin (and this fork in particular) is heavily depending on the API changes discovered and implemented in [HowLongToBeat-PythonAPI repository](https://github.com/ScrappyCocco/HowLongToBeat-PythonAPI). Every change done to API by HLTB might break this plugin workability. Unfortunately, there may and will be delays in restoring the plugin workability. However, recent changes were implemented to mitigate changes in the HLTB API and try to get the API name dynamically, bypassing the need for manual changes and a new version if possible.
@@ -16,7 +19,7 @@ Built with [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader).
 
 ## Screenshots
 
-![](images/image001.png)
+![Title image](images/image001.png)
 
 ## Manual installation in Decky
 

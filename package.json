@@ -8,7 +8,7 @@
         "prepare": "husky install",
         "test": "jest"
     },
-    "author": "hulkrelax",
+    "author": "contributors and morwy",
     "license": "MIT",
     "private": true,
     "devDependencies": {
