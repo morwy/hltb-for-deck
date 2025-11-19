@@ -3,7 +3,6 @@
 ## Description
 
 A plugin to show you game lengths according to How Long To Beat.
-
 Built with [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader).
 
 > [!IMPORTANT]  
@@ -29,15 +28,32 @@ Built with [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader).
 6. Select **HLTB for Deck** settings and then click **Reload**.
 7. **HLTB for Deck** plugin should change its version to latest one, indicating successful installation.
 
-## New Features (as of 1.4.0)
+## Building from source
 
-### Customize visibility of plugin per game
+1. Download and install Node.js from [https://nodejs.org/en/download](https://nodejs.org/en/download).
+2. Verify that installation was successful by running following command in terminal:
 
-![](images/image002.png)
+   ```bash
+   node --version
+   ```
 
-On the game's page, click the gear icon and then Show/Hide HLTB Stats to toggle whether or not the plugin is displayed for the current game. This allows you to customize whether you want to see the stats for a game or not.
+3. Clone this repository and navigate to the project folder.
+4. Install pnpm:
 
-### Customize which stats are displayed
+   ```bash
+   npm install -g pnpm
+   ```
 
-![](images/image003.png)
-From the Quick Access Menu HLTB For Deck settings page, toggle each stat individually.
+5. Install project dependencies:
+
+   ```bash
+   pnpm install
+   ```
+
+6. Build the project:
+
+   ```bash
+   pnpm run build
+   ```
+
+A batch script `build.bat` that builds and packs the project into a ZIP archive for manual installation was created and located in the project root folder.
