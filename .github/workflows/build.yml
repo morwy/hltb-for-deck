@@ -119,6 +119,7 @@ jobs:
         permissions:
             contents: write
         needs: [increment-version, build]
+        if: github.ref_name == 'main'
 
         steps:
             - uses: actions/checkout@v5
