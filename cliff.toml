@@ -72,10 +72,10 @@ commit_parsers = [
   { message = "^build\\(deps.*\\)", skip = true },
   { message = "^chore\\(pr\\)", skip = true },
   { message = "^chore\\(pull\\)", skip = true },
-  { message = "^chore|^ci", group = "<!-- 7 -->⚙️ Miscellaneous Tasks" },
-  { body = ".*security", group = "<!-- 8 -->🛡️ Security" },
-  { message = "^revert", group = "<!-- 9 -->◀️ Revert" },
-  { message = ".*", group = "<!-- 10 -->💼 Other" },
+  { message = "^revert", skip = true },
+  { message = "^chore|^ci", skip = true },
+  { body = ".*security", group = "<!-- 7 -->🛡️ Security" },
+  { message = ".*", group = "<!-- 8 -->💼 Other" },
 ]
 # filter out the commits that are not matched by commit parsers
 filter_commits = false
