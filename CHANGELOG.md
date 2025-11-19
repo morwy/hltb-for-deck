@@ -1,26 +1,5 @@
 # Changelog
 
-## [2.0.5] - 2025-11-19
-
-### 🚀 Features
-
-- Added Italian translation (#19) by @Voralberg
-
-### 🐛 Bug Fixes
-
-- Adjusted normalize() tests to be in accordance to latest changes by @morwy
-- React error on SteamOS 3.7.17 (#26) by @Lexodeus
-- Added support for non-latin characters (#15) by @morwy
-
-### 📚 Documentation
-
-- Added more details on the current state of the HLTB API changes (#11) by @syrnyk
-- Removed note about not being published in Decky store. by @morwy
-
-### ⚙️ Miscellaneous Tasks
-
-- Running all jobs on ubuntu-latest runner. by @morwy
-
 ## [2.0.4] - 2025-01-04
 
 ### 🚀 Features
@@ -71,7 +50,7 @@
 ### 🐛 Bug Fixes
 
 - Update API to use appId again by @FrogTheFrog
-- Add try / catch to fix plugin breaking in desktop mode
+- Add try / catch to fix plugin breaking in desktop mode by @eXhumer
 - Syncing with HLTB API changes by @morwy
 
 ## [2.0.0] - 2024-09-12
