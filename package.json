@@ -34,7 +34,7 @@
         "fast-levenshtein": "^3.0.0",
         "hltb-for-deck": "link:",
         "localforage": "^1.10.0",
-        "react": "^18.2.0",
+        "react": "^19.2.0",
         "react-icons": "^4.12.0"
     },
     "lint-staged": {
