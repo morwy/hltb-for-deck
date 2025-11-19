@@ -25,9 +25,9 @@
         "rollup": "^4.53.3",
         "tslib": "^2.8.1",
         "typescript": "^5.9.3",
-        "jest": "^29.x.x",
-        "ts-jest": "^29.x.x",
-        "@types/jest": "^29.x.x"
+        "jest": "^29.7.0",
+        "ts-jest": "^29.4.5",
+        "@types/jest": "^29.5.14"
     },
     "dependencies": {
         "@decky/api": "^1.1.2",
