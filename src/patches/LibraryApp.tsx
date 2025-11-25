@@ -1,92 +1,109 @@
-import { ServerAPI, afterPatch, wrapReactType } from 'decky-frontend-lib';
+import {
+    afterPatch,
+    appDetailsClasses,
+    createReactTreePatcher,
+    findInReactTree,
+} from '@decky/ui';
+import { routerHook } from '@decky/api';
 import { ReactElement } from 'react';
 import { GameStats } from '../components/GameStats/GameStats';
 import { normalize } from '../utils';
 
+function isSteamGameType(appType: number) {
+    switch (appType) {
+        case 1: // Game
+        case 8: // Demo
+            return true;
+    }
+    return false;
+}
+
 // I hate this method
-export const patchAppPage = (serverApi: ServerAPI) => {
-    return serverApi.routerHook.addPatch(
-        '/library/app/:appid',
-        (props: { path: string; children: ReactElement }) => {
-            afterPatch(
-                props.children.props,
-                'renderFunc',
-                (_: Record<string, unknown>[], ret1: ReactElement) => {
-                    const game: string = normalize(
-                        ret1.props.children.props.overview.display_name
-                    );
-                    const appId: number =
-                        ret1.props.children.props.overview.appid;
-                    wrapReactType(ret1.props.children);
-                    afterPatch(
-                        ret1.props.children.type,
-                        'type',
-                        (_1: Record<string, unknown>[], ret2: ReactElement) => {
-                            const componentToSplice =
-                                ret2.props.children?.[1]?.props.children.props
-                                    .children;
-                            // This always seems to be -1
-                            const hltbComponentIndex =
-                                componentToSplice?.findIndex(
-                                    (child: ReactElement) => {
-                                        return (
-                                            child?.props?.id === 'hltb-for-deck'
-                                        );
-                                    }
-                                );
+export const patchAppPage = () => {
+    return routerHook.addPatch('/library/app/:appid', (routerTree: any) => {
+        const routeProps = findInReactTree(
+            routerTree,
+            (x: any) => x?.renderFunc
+        );
+        if (routeProps) {
+            let game: string;
+            let appId: number;
+            let isSteamGame: boolean;
 
-                            // We want to splice into the component before this point
-                            const spliceIndex = componentToSplice?.findIndex(
-                                (child: ReactElement) => {
-                                    return (
-                                        child?.props?.childFocusDisabled !==
-                                            undefined &&
-                                        child?.props?.navRef !== undefined &&
-                                        child?.props?.children?.props
-                                            ?.details !== undefined &&
-                                        child?.props?.children?.props
-                                            ?.overview !== undefined &&
-                                        child?.props?.children?.props
-                                            ?.bFastRender !== undefined
-                                    );
-                                }
+            const patchHandler = createReactTreePatcher(
+                [
+                    (tree: any) => {
+                        const children = findInReactTree(
+                            tree,
+                            (x: any) => x?.props?.children?.props?.overview
+                        )?.props?.children;
+                        if (!children) {
+                            console.error(
+                                'Failed to patch renderFunc@children!'
                             );
+                            return null;
+                        }
 
-                            const component = (
-                                <GameStats
-                                    id="hltb-for-deck"
-                                    serverApi={serverApi}
-                                    game={game}
-                                    appId={appId}
-                                />
+                        const overview = children.props.overview;
+                        game = normalize(overview.display_name);
+                        appId = overview.appid;
+                        isSteamGame = isSteamGameType(overview.app_type);
+
+                        return children;
+                    },
+                ],
+                (_: Record<string, unknown>[], ret: ReactElement) => {
+                    const componentToSplice = findInReactTree(
+                        ret,
+                        (x: any) =>
+                            Array.isArray(x?.props?.children) &&
+                            x?.props?.className?.includes(
+                                appDetailsClasses.InnerContainer
+                            )
+                    )?.props?.children;
+
+                    // We want to splice into the component before this point
+                    const spliceIndex = componentToSplice?.findIndex(
+                        (child: ReactElement) => {
+                            return (
+                                child?.props?.childFocusDisabled !==
+                                    undefined &&
+                                child?.props?.navRef !== undefined &&
+                                child?.props?.children?.props?.details !==
+                                    undefined &&
+                                child?.props?.children?.props?.overview !==
+                                    undefined &&
+                                child?.props?.children?.props?.bFastRender !==
+                                    undefined
                             );
-
-                            if (hltbComponentIndex < 0) {
-                                if (spliceIndex > -1) {
-                                    componentToSplice?.splice(
-                                        spliceIndex,
-                                        0,
-                                        component
-                                    );
-                                } else {
-                                    console.error(
-                                        'hltb-for-deck could not find where to splice!'
-                                    );
-                                }
-                            } else {
-                                componentToSplice?.splice(
-                                    hltbComponentIndex,
-                                    1,
-                                    component
-                                );
-                            }
-                            return ret2;
                         }
                     );
-                    return ret1;
+
+                    if (spliceIndex > -1) {
+                        componentToSplice?.splice(
+                            spliceIndex,
+                            0,
+                            <GameStats
+                                id="hltb-for-deck"
+                                game={game}
+                                appId={appId}
+                                isSteamGame={isSteamGame}
+                            />
+                        );
+                    } else {
+                        // If the component is not available for splicing, we could be in some
+                        // non-game page, like soundtracks. In this case it's not an error!
+                        (componentToSplice ? console.error : console.debug)(
+                            'hltb-for-deck could not find where to splice!'
+                        );
+                    }
+
+                    return ret;
                 }
             );
-            return props;
+
+            afterPatch(routeProps, 'renderFunc', patchHandler);
         }
-    );
+        return routerTree;
+    });
 };

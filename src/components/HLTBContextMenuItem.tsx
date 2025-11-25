@@ -1,4 +1,4 @@
-import { MenuItem, Navigation } from 'decky-frontend-lib';
+import { MenuItem, Navigation } from '@decky/ui';
 import { setShowHide } from '../hooks/Cache';
 import useLocalization from '../hooks/useLocalization';
 

@@ -1,3 +1,9 @@
+# Binaries
+dist
+hltb-for-deck
+hltb-for-deck.zip
+hltb-for-deck.tar.gz
+
 # Logs
 logs
 *.log
@@ -102,3 +108,12 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Decky Plugin CLI
+cli/
+
+# PNPM files
+.pnpm-store/
+
+# Output plugin directory
+out/

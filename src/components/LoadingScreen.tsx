@@ -1,4 +1,4 @@
-import { SteamSpinner } from 'decky-frontend-lib';
+import { SteamSpinner } from '@decky/ui';
 
 export const LoadingScreen = () => {
     return <SteamSpinner></SteamSpinner>;

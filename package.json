@@ -1,38 +1,40 @@
 {
     "name": "hltb-for-deck",
-    "version": "1.4.1",
+    "version": "2.0.5",
     "description": "A plugin to show you game lengths according to How Long To Beat",
+    "type": "module",
     "scripts": {
         "build": "rollup -c",
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "test": "jest"
     },
-    "author": "hulkrelax",
+    "author": "contributors and morwy",
     "license": "MIT",
     "private": true,
     "devDependencies": {
         "@commitlint/cli": "^17.8.1",
         "@commitlint/config-conventional": "^17.8.1",
-        "@rollup/plugin-commonjs": "^22.0.2",
-        "@rollup/plugin-json": "^4.1.0",
-        "@rollup/plugin-node-resolve": "^13.3.0",
-        "@rollup/plugin-replace": "^4.0.0",
-        "@rollup/plugin-typescript": "^8.5.0",
+        "@decky/rollup": "^1.0.1",
+        "@decky/ui": "^4.11.0",
         "@types/fast-levenshtein": "^0.0.2",
-        "@types/react": "^17.0.70",
-        "@types/react-dom": "^18.2.15",
+        "@types/react": "^17.0.90",
+        "@types/react-dom": "^18.3.7",
         "husky": "^8.0.3",
         "lint-staged": "^13.3.0",
         "prettier": "2.7.1",
-        "rollup": "^2.79.1",
-        "rollup-plugin-import-assets": "^1.1.1",
-        "tslib": "^2.6.2",
-        "typescript": "^4.9.5"
+        "rollup": "^4.53.3",
+        "tslib": "^2.8.1",
+        "typescript": "^5.9.3",
+        "jest": "^29.7.0",
+        "ts-jest": "^29.4.5",
+        "@types/jest": "^29.5.14"
     },
     "dependencies": {
-        "decky-frontend-lib": "^3.23.1",
+        "@decky/api": "^1.1.2",
         "fast-levenshtein": "^3.0.0",
+        "hltb-for-deck": "link:",
         "localforage": "^1.10.0",
-        "react": "^18.2.0",
+        "react": "^19.2.0",
         "react-icons": "^4.12.0"
     },
     "lint-staged": {

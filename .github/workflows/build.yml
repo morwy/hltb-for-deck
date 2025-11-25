@@ -1,68 +1,141 @@
 name: Build and Release HLTB for Deck
 
-on:
-    push:
-        tags:
-            - 'v*'
-    pull_request:
-        branches: ['main']
-
-    # Allows you to run this workflow manually from the Actions tab
-    workflow_dispatch:
+# Creating releases manually via GUI.
+on: workflow_dispatch
 
 jobs:
+    increment-version:
+      runs-on: ubuntu-latest
+      permissions:
+          contents: write
+      outputs:
+        BRANCH_NAME: ${{ steps.read_branch.outputs.branch_name }}
+        NEW_TAG_NAME: ${{ steps.increment-npm-version.outputs.v-version }}
+        RELEASE_ENTRY_TEXT: ${{ steps.git-cliff-release-entry.outputs.content }}
+
+      steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Read branch name
+        id: read_branch
+        shell: bash
+        run: echo "branch_name=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+
+      - name: Increment npm version
+        uses: reecetech/version-increment@2024.10.1
+        id: increment-npm-version
+        with:
+          scheme: semver
+          increment: patch
+
+      - name: Write incremented version to package.json
+        uses: reedyuk/npm-version@1.2.2
+        with:
+          version: ${{ steps.increment-npm-version.outputs.version }} 
+
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@v4
+        id: git-cliff-release-entry
+        with:
+          config: cliff.toml
+          args: --verbose --strip all --tag ${{ steps.increment-npm-version.outputs.v-version }} --unreleased
+        env:
+          OUTPUT: CHANGES.md
+
+      - name: Get changelog since last release
+        uses: orhun/git-cliff-action@v4
+        id: git-cliff-file
+        with:
+          config: cliff.toml
+          args: --verbose --tag ${{ steps.increment-npm-version.outputs.v-version }}
+        env:
+          OUTPUT: CHANGELOG.md
+
+      - name: Commit CHANGELOG.md and package.json
+        if: github.ref_name == 'main'
+        id: change-log-commit
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          file_pattern: 'CHANGELOG.md package.json'
+          branch: ${{ steps.read_branch.outputs.branch_name }}
+          commit_message: "chore(release): preparing for upcoming release (CHANGELOG.md, package.json)"
+
     build:
         runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        needs: [increment-version]
         steps:
-            - uses: actions/checkout@v3
-
-            - name: Setup Node
-              uses: actions/setup-node@v1
+            - name: Checkout repository
+              uses: actions/checkout@v6
               with:
-                  node-version: '18.3'
+                ref: ${{ needs.increment-version.outputs.BRANCH_NAME }}
+                fetch-depth: 0
+
+            - name: Fetch the latest changes
+              run: git pull origin ${{ needs.increment-version.outputs.BRANCH_NAME }}
+
+            - name: Setup node
+              uses: actions/setup-node@v6
+              with:
+                  node-version: '19.2'
 
             - name: Install pnpm
               run: npm install -g pnpm
 
-            - name: Install Dependencies
+            - name: Install dependencies
               run: pnpm install
 
-            - name: build
+            - name: Build
               run: pnpm run build
 
-            - name: copy files into build
+            - name: Create package structure
               run: |
                   cp plugin.json ./dist/
                   cp package.json ./dist/
                   mkdir ./dist/dist
+                  rm ./dist/index.js.map
                   mv ./dist/index.js ./dist/dist/
+                  mv ./dist ./hltb-for-deck
 
-            - name: Upload package
-              uses: actions/upload-artifact@v2
-              with:
-                  name: hltb-for-deck
-                  path: |
-                      ./dist/*
-    release:
-        needs: build
-        if: startsWith(github.ref, 'refs/tags/v')
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v2
-
-            - uses: actions/download-artifact@v3
-              with:
-                  name: hltb-for-deck
-                  path: hltb-for-deck
-
-            - name: zip/tar release
+            - name: Archive built files
               run: |
                   zip -r hltb-for-deck.zip hltb-for-deck/*
                   tar -czvf hltb-for-deck.tar.gz hltb-for-deck
+            
+            - name: Upload artifacts
+              uses: actions/upload-artifact@v5
+              with:
+                  name: hltb-for-deck
+                  path:  |
+                    hltb-for-deck.zip
+                    hltb-for-deck.tar.gz
+                  if-no-files-found: error
+
+    release:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        needs: [increment-version, build]
+        if: github.ref_name == 'main'
+
+        steps:
+            - uses: actions/checkout@v6
+
+            - name: Downloading all built binaries
+              uses: actions/download-artifact@v6
+              with:
+                path: ${{ github.workspace }}
+                name: hltb-for-deck
+        
+            - name: List all built binaries
+              run: ls -R
 
             - name: Create a release
               uses: ncipollo/release-action@v1
               with:
-                  artifacts: 'hltb-for-deck.zip,hltb-for-deck.tar.gz'
-                  bodyFile: 'release.md'
-                  token: ${{ secrets.GITHUB_TOKEN }}
+                body: "${{ needs.increment-version.outputs.RELEASE_ENTRY_TEXT }}"
+                tag: "${{ needs.increment-version.outputs.NEW_TAG_NAME }}"
+                artifacts: "*.zip, *.tar.gz"

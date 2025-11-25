@@ -1,50 +1,107 @@
-import { DialogButtonPrimary, Navigation, ServerAPI } from 'decky-frontend-lib';
+import {
+    appDetailsClasses,
+    appDetailsHeaderClasses,
+    DialogButtonPrimary,
+    Navigation,
+} from '@decky/ui';
 import useHltb from '../../hooks/useHltb';
 import { usePreference, useStyle } from '../../hooks/useStyle';
 import style from './style';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useStatPreferences } from '../../hooks/useStatPreferences';
 import useLocalization from '../../hooks/useLocalization';
 
-type GameStatsProps = {
-    serverApi: ServerAPI;
+interface GameStatsProps {
     game: string;
     appId: number;
     id: string;
-};
+    isSteamGame: boolean;
+}
 
-export const GameStats = ({ serverApi, game, appId, id }: GameStatsProps) => {
-    const [gameLaunching, setGameLaunching] = useState<boolean>(false);
-    const lang = useLocalization();
-    const handleGameActionStart = (
-        _actionType: number,
-        strAppId: string,
-        actionName: string
-    ) => {
-        const gameActionAppId = parseInt(strAppId);
-        if (
-            actionName == 'LaunchApp' &&
-            appId == gameActionAppId &&
-            !gameLaunching
-        ) {
-            setGameLaunching(true);
-        } else {
-            setGameLaunching(false);
+function findTopCapsuleParent(ref: HTMLDivElement | null): Element | null {
+    const children = ref?.parentElement?.children;
+    if (!children) {
+        return null;
+    }
+
+    let headerContainer: Element | undefined;
+    for (const child of children) {
+        if (child.className.includes(appDetailsClasses.Header)) {
+            headerContainer = child;
+            break;
         }
-    };
+    }
 
-    const onGameActionStart = SteamClient.Apps.RegisterForGameActionStart(
-        handleGameActionStart
-    );
-    const onGameActionEnd = SteamClient.Apps.RegisterForGameActionEnd(
-        handleGameActionStart
-    );
+    if (!headerContainer) {
+        return null;
+    }
+
+    let topCapsule: Element | null = null;
+    for (const child of headerContainer.children) {
+        if (child.className.includes(appDetailsHeaderClasses.TopCapsule)) {
+            topCapsule = child;
+            break;
+        }
+    }
+
+    return topCapsule;
+}
+
+export const GameStats = ({ game, appId, id, isSteamGame }: GameStatsProps) => {
+    // There will be no mutation when the page is loaded (either from exiting the game
+    // or just newly opening the page), therefore it's not "launching" by default.
+    const [gameLaunching, setGameLaunching] = useState<boolean>(false);
+    const ref = useRef<HTMLDivElement | null>(null);
     useEffect(() => {
-        return function cleanup() {
-            onGameActionStart.unregister();
-            onGameActionEnd.unregister();
+        const topCapsule = findTopCapsuleParent(ref?.current);
+        if (!topCapsule) {
+            console.error('HLTB - TopCapsule container not found!');
+            return;
+        }
+
+        const mutationObserver = new MutationObserver((entries) => {
+            for (const entry of entries) {
+                if (
+                    entry.type !== 'attributes' ||
+                    entry.attributeName !== 'class'
+                ) {
+                    continue;
+                }
+
+                const className = (entry.target as Element).className;
+                const fullscreenMode =
+                    className.includes(
+                        appDetailsHeaderClasses.FullscreenEnterStart
+                    ) ||
+                    className.includes(
+                        appDetailsHeaderClasses.FullscreenEnterActive
+                    ) ||
+                    className.includes(
+                        appDetailsHeaderClasses.FullscreenEnterDone
+                    ) ||
+                    className.includes(
+                        appDetailsHeaderClasses.FullscreenExitStart
+                    ) ||
+                    className.includes(
+                        appDetailsHeaderClasses.FullscreenExitActive
+                    );
+                const fullscreenAborted = className.includes(
+                    appDetailsHeaderClasses.FullscreenExitDone
+                );
+
+                setGameLaunching(fullscreenMode && !fullscreenAborted);
+            }
+        });
+        mutationObserver.observe(topCapsule, {
+            attributes: true,
+            attributeFilter: ['class'],
+        });
+        return () => {
+            mutationObserver.disconnect();
         };
     }, []);
+
+    const lang = useLocalization();
     const {
         mainStat,
         mainPlusStat,
@@ -52,7 +109,7 @@ export const GameStats = ({ serverApi, game, appId, id }: GameStatsProps) => {
         allStylesStat,
         gameId,
         showStats,
-    } = useHltb(appId, game, serverApi);
+    } = useHltb(appId, game, isSteamGame);
     const { showMain, showMainPlus, showComplete, showAllStyles } =
         useStatPreferences();
     const hltbStyle = useStyle();
@@ -84,7 +141,7 @@ export const GameStats = ({ serverApi, game, appId, id }: GameStatsProps) => {
             : 'hltb-details-btn-clean';
 
     return (
-        <div id={id} style={{ display: hide ? 'none' : 'block' }}>
+        <div id={id} ref={ref} style={{ display: hide ? 'none' : 'block' }}>
             {style}
             <div
                 className={`${baseClass} ${hltbInfoStyle} ${hltbInfoPosition}`}

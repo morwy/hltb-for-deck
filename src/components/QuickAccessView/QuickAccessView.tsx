@@ -5,7 +5,7 @@ import {
     Router,
     DropdownItem,
     ToggleField,
-} from 'decky-frontend-lib';
+} from '@decky/ui';
 import {
     clearCache,
     hideDetailsKey,
