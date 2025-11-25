@@ -2,7 +2,7 @@
     "default": "Por defecto",
     "clean": "\"Clean\"",
     "cleanLeft": "\"Limpio\" Izquierda",
-    "cleanDefault": "\"Limpio\" Por defecto",
+    "cleanDefault": "\"Clean\" Por defecto",
     "hltbStyle": "Estilo HLTB",
     "cleanDesc": "Los estilos \"Clean\" están diseñados para funcionar con el tema CSS Loader \"Clean Gameview\"",
     "hideViewDetails": "Ocultar \"Ver detalles\"",
