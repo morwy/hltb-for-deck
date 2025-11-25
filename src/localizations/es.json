@@ -4,7 +4,7 @@
     "cleanLeft": "\"Limpio\" Izquierda",
     "cleanDefault": "\"Limpio\" Por defecto",
     "hltbStyle": "Estilo HLTB",
-    "cleanDesc": "Los estilos \"Limpio\" están diseñados para funcionar con el tema CSS Loader \"Clean Gameview\"",
+    "cleanDesc": "Los estilos \"Clean\" están diseñados para funcionar con el tema CSS Loader \"Clean Gameview\"",
     "hideViewDetails": "Ocultar \"Ver detalles\"",
     "hideViewDetailsDesc": "Oculta el botón \"Ver detalles\" en las estadísticas de HLTB",
     "toggleMainStat": "Alternar estadística principal",
