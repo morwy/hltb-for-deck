@@ -1,7 +1,7 @@
 {
     "default": "Por defecto",
     "clean": "\"Clean\"",
-    "cleanLeft": "\"Limpio\" Izquierda",
+    "cleanLeft": "\"Clean\" Izquierda",
     "cleanDefault": "\"Limpio\" Por defecto",
     "hltbStyle": "Estilo HLTB",
     "cleanDesc": "Los estilos \"Limpio\" están diseñados para funcionar con el tema CSS Loader \"Clean Gameview\"",
