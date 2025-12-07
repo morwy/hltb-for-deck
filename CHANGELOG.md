@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.0.6] - 2025-12-03
+
+### 🚀 Features
+
+- Add es and es-419 translations (#33) by @andreesandoval
+
+### 🐛 Bug Fixes
+
+- Hltb info not loading - add auth token to request & improve search URL identification (#35) by @Lexodeus
+
 ## [2.0.5] - 2025-11-20
 
 ### 🚀 Features

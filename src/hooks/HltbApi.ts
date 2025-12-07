@@ -8,10 +8,44 @@ import {
     SearchResults,
 } from './GameInfoData';
 
-// NOTE: Close reproduction of https://github.com/ScrappyCocco/HowLongToBeat-PythonAPI/pull/26
-const SearchKey = Symbol('Search Key');
-let searchApiRoot: string = '';
-async function fetchSearchKey() {
+// NOTE: Close reproduction of https://github.com/ScrappyCocco/HowLongToBeat-PythonAPI/pull/53
+const AuthToken = Symbol('Auth Token');
+let searchUrl: string = '';
+
+async function fetchAuthToken(): Promise<string | null> {
+    try {
+        const timestamp = Date.now();
+        const url = `https://howlongtobeat.com/api/search/init?t=${timestamp}`;
+        const response = await fetchNoCors(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Origin: 'https://howlongtobeat.com',
+                Referer: 'https://howlongtobeat.com/',
+                'User-Agent':
+                    'Chrome: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
+            },
+        });
+
+        if (response.status === 200) {
+            const data = await response.json();
+            const token = data?.token;
+            if (token) {
+                console.log('HLTB Auth Token acquired');
+                return token;
+            }
+            console.error('HLTB - no token in response:', data);
+        } else {
+            console.error('HLTB - failed to get auth token:', response.status);
+        }
+    } catch (error) {
+        console.error('HLTB - error fetching auth token:', error);
+    }
+
+    return null;
+}
+
+async function fetchSearchUrl(): Promise<string | null> {
     try {
         const url = 'https://howlongtobeat.com';
         const response = await fetchNoCors(url);
@@ -29,25 +63,29 @@ async function fetchSearchKey() {
 
                     if (scriptResponse.status === 200) {
                         const scriptText = await scriptResponse.text();
+                        // Find the path suffix after /api/ (e.g., "search" or "find/v2")
                         const pattern =
-                            /\/api\/[a-zA-Z]*\/"\.concat\("([a-zA-Z0-9]+)"\)\.concat\("([a-zA-Z0-9]+)"\)/;
-                        const matches = scriptText.match(pattern);
+                            /fetch\s*\(\s*["']\/api\/([a-zA-Z0-9_\/]+)[^"']*["']\s*,\s*{[^}]*method:\s*["']POST["'][^}]*}/gi;
+                        const matches = pattern.exec(scriptText);
 
                         if (matches && matches[1]) {
-                            // dynamically retrieving the root of the HLBT search URL from the script
-                            // Should work if {search-api} changes, assuming the overall pattern stays the same (i.e: "api/{search-api}/".concat(...).concat(...)")
-                            searchApiRoot = matches[0]
-                                .split('.')[0]
-                                .slice(0, -1);
-                            const apiKey = `${matches[1]}${matches[2]}`;
-                            console.log('HLTB API Key:', apiKey);
-                            return apiKey;
+                            const pathSuffix = matches[1];
+                            // Determine the root path (e.g., "search" from "search/v2")
+                            // This ensures we get the base endpoint name even if sub-paths are used.
+                            const basePath = pathSuffix.includes('/')
+                                ? pathSuffix.split('/')[0]
+                                : pathSuffix;
+                            if (basePath !== 'find') {
+                                searchUrl = `/api/${basePath}`;
+                                console.log('HLTB Search URL:', searchUrl);
+                                return searchUrl;
+                            }
                         }
                     }
                 }
             }
 
-            console.error('HLTB - failed to get API key!');
+            console.error('HLTB - failed to find search URL!');
         } else {
             console.error('HLTB', response);
         }
@@ -100,7 +138,7 @@ const keyCache = new Map<
     symbol,
     { key: string | null; keyFetch: () => Promise<string | null> }
 >([
-    [SearchKey, { key: null, keyFetch: fetchSearchKey }],
+    [AuthToken, { key: null, keyFetch: fetchAuthToken }],
     [NextJsKey, { key: null, keyFetch: fetchNextJsKey }],
 ]);
 async function fetchWithKey(
@@ -135,7 +173,13 @@ async function fetchWithKey(
     return await callback(cache.key);
 }
 
-async function fetchSearchResultsWithKey(gameName: string, apiKey: string) {
+async function fetchSearchResultsWithAuthToken(
+    gameName: string,
+    authToken: string
+) {
+    if (searchUrl === '') {
+        searchUrl = (await fetchSearchUrl()) || '/api/search';
+    }
     const data = {
         searchType: 'games',
         searchTerms: gameName.split(' '),
@@ -163,13 +207,14 @@ async function fetchSearchResultsWithKey(gameName: string, apiKey: string) {
         },
     };
 
-    return fetchNoCors(`https://howlongtobeat.com/${searchApiRoot}${apiKey}`, {
+    return fetchNoCors(`https://howlongtobeat.com${searchUrl}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             Origin: 'https://howlongtobeat.com',
             Referer: 'https://howlongtobeat.com/',
             Authority: 'howlongtobeat.com',
+            'x-auth-token': authToken,
             'User-Agent':
                 'Chrome: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
         },
@@ -178,8 +223,8 @@ async function fetchSearchResultsWithKey(gameName: string, apiKey: string) {
 }
 
 async function fetchSearchResults(appName: string) {
-    const response = await fetchWithKey(SearchKey, (key) =>
-        fetchSearchResultsWithKey(appName, key)
+    const response = await fetchWithKey(AuthToken, (token) =>
+        fetchSearchResultsWithAuthToken(appName, token)
     );
     if (!response) {
         // Error already logged
