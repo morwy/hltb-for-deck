@@ -15,7 +15,7 @@ let searchUrl: string = '';
 async function fetchAuthToken(): Promise<string | null> {
     try {
         const timestamp = Date.now();
-        const url = `https://howlongtobeat.com/api/search/init?t=${timestamp}`;
+        const url = `https://howlongtobeat.com/api/finder/init?t=${timestamp}`;
         const response = await fetchNoCors(url, {
             method: 'GET',
             headers: {
@@ -178,7 +178,7 @@ async function fetchSearchResultsWithAuthToken(
     authToken: string
 ) {
     if (searchUrl === '') {
-        searchUrl = (await fetchSearchUrl()) || '/api/search';
+        searchUrl = (await fetchSearchUrl()) || '/api/finder';
     }
     const data = {
         searchType: 'games',
