@@ -1,7 +1,10 @@
 name: Build and Release HLTB for Deck
 
 # Creating releases manually via GUI.
-on: workflow_dispatch
+on: 
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
     increment-version:
