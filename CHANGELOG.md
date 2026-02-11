@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.7] - 2026-02-11
+
+### 🐛 Bug Fixes
+
+- Changed "hours" in RU & UA translations (#36) by @chefranov
+- Synced code with breaking changes in the HLTB API (#41) by @lonsdaleite
+
 ## [2.0.6] - 2025-12-03
 
 ### 🚀 Features
