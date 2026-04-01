@@ -149,10 +149,8 @@ export const LibraryContextMenu = fakeRenderComponent(
                 m[prop]?.toString() &&
                 m[prop].toString().includes('().LibraryContextMenu')
             ) {
-                return Object.values(m).find(
-                    (sibling) =>
-                        sibling?.toString().includes('createElement') &&
-                        sibling?.toString().includes('navigator:')
+                return Object.values(m).find((sibling) =>
+                    sibling?.toString().includes('navigator:')
                 );
             }
         }
