@@ -2,6 +2,11 @@ import { fetchNoCors } from '@decky/api';
 import { get } from 'fast-levenshtein';
 import { normalize } from '../utils';
 import {
+    clearApiBootstrapCache,
+    getApiBootstrapCache,
+    updateApiBootstrapCache,
+} from './Cache';
+import {
     GameData,
     GamePageData,
     HLTBGameStats,
@@ -23,6 +28,7 @@ interface SearchAuth {
 
 let searchUrl: string = '';
 let searchAuth: SearchAuth | null = null;
+let bootstrapCacheLoaded = false;
 
 function getBaseHeaders() {
     return {
@@ -81,6 +87,46 @@ function parseSearchAuth(data: unknown): SearchAuth | null {
     return null;
 }
 
+async function persistSearchBootstrap(
+    currentSearchUrl: string,
+    auth: SearchAuth
+) {
+    searchUrl = currentSearchUrl;
+    searchAuth = auth;
+    await updateApiBootstrapCache({
+        searchUrl: currentSearchUrl,
+        searchAuth: {
+            searchUrl: currentSearchUrl,
+            ...auth,
+        },
+    });
+}
+
+async function invalidateSearchAuth() {
+    searchAuth = null;
+    await clearApiBootstrapCache('searchAuth');
+}
+
+async function persistNextJsKey(nextJsKey: string) {
+    const nextJsCache = keyCache.get(NextJsKey);
+    if (nextJsCache) {
+        nextJsCache.key = nextJsKey;
+    }
+
+    await updateApiBootstrapCache({
+        nextJsKey,
+    });
+}
+
+async function invalidateNextJsKey() {
+    const nextJsCache = keyCache.get(NextJsKey);
+    if (nextJsCache) {
+        nextJsCache.key = null;
+    }
+
+    await clearApiBootstrapCache('nextJsKey');
+}
+
 async function fetchSearchAuth(
     currentSearchUrl: string
 ): Promise<SearchAuth | null> {
@@ -94,7 +140,12 @@ async function fetchSearchAuth(
 
         if (response.status === 200) {
             const data = await response.json();
-            return parseSearchAuth(data);
+            const auth = parseSearchAuth(data);
+            if (auth !== null) {
+                await persistSearchBootstrap(currentSearchUrl, auth);
+            }
+
+            return auth;
         } else {
             console.error('HLTB - failed to get auth token:', response.status);
         }
@@ -102,6 +153,7 @@ async function fetchSearchAuth(
         console.error('HLTB - error fetching auth token:', error);
     }
 
+    await invalidateSearchAuth();
     return null;
 }
 
@@ -153,17 +205,16 @@ async function fetchSearchUrl(): Promise<string | null> {
                     const basePath = pathSuffix.includes('/')
                         ? pathSuffix.split('/')[0]
                         : pathSuffix;
-                    searchUrl = `/api/${basePath}`;
-                    console.log('HLTB Search URL:', searchUrl);
-                    return searchUrl;
+                    const discoveredSearchUrl = `/api/${basePath}`;
+                    console.log('HLTB Search URL:', discoveredSearchUrl);
+                    return discoveredSearchUrl;
                 }
             }
 
-            searchUrl = DEFAULT_SEARCH_URL;
             console.warn(
                 `HLTB - failed to discover search URL, falling back to ${DEFAULT_SEARCH_URL}`
             );
-            return searchUrl;
+            return DEFAULT_SEARCH_URL;
         } else {
             console.error('HLTB', response);
         }
@@ -218,10 +269,42 @@ const keyCache = new Map<
     symbol,
     { key: string | null; keyFetch: () => Promise<string | null> }
 >([[NextJsKey, { key: null, keyFetch: fetchNextJsKey }]]);
+
+async function ensureBootstrapCacheLoaded() {
+    if (bootstrapCacheLoaded) {
+        return;
+    }
+
+    bootstrapCacheLoaded = true;
+
+    const bootstrapCache = await getApiBootstrapCache();
+    searchUrl = bootstrapCache?.searchUrl || DEFAULT_SEARCH_URL;
+
+    if (
+        bootstrapCache?.searchAuth &&
+        bootstrapCache.searchAuth.searchUrl === searchUrl
+    ) {
+        searchAuth = {
+            token: bootstrapCache.searchAuth.token,
+            hpKey: bootstrapCache.searchAuth.hpKey,
+            hpVal: bootstrapCache.searchAuth.hpVal,
+        };
+    } else {
+        searchAuth = null;
+    }
+
+    const nextJsCache = keyCache.get(NextJsKey);
+    if (nextJsCache) {
+        nextJsCache.key = bootstrapCache?.nextJsKey ?? null;
+    }
+}
+
 async function fetchWithKey(
     keyName: symbol,
     callback: (key: string) => Promise<Response>
 ) {
+    await ensureBootstrapCacheLoaded();
+
     let cache = keyCache.get(keyName);
     if (!cache) {
         console.error('HLTB - failed to get cache item for', keyName);
@@ -234,16 +317,28 @@ async function fetchWithKey(
         return null;
     }
 
+    if (keyName === NextJsKey) {
+        await persistNextJsKey(cache.key);
+    }
+
     const results = await callback(cache.key);
     if (results.status === 200) {
         return results;
     }
 
     // Key might have expired, fetch a new one and try again
+    if (keyName === NextJsKey) {
+        await invalidateNextJsKey();
+    }
+
     cache.key = await cache.keyFetch();
     if (cache.key === null) {
         // error already logged
         return null;
+    }
+
+    if (keyName === NextJsKey) {
+        await persistNextJsKey(cache.key);
     }
 
     // Whatever the response is, we propagate it to be logged
@@ -251,21 +346,25 @@ async function fetchWithKey(
 }
 
 async function refreshSearchAuth(refreshSearchPath = false) {
-    if (refreshSearchPath || searchUrl === '') {
-        searchUrl = (await fetchSearchUrl()) || searchUrl;
+    await ensureBootstrapCacheLoaded();
+
+    if (refreshSearchPath) {
+        searchUrl = (await fetchSearchUrl()) || DEFAULT_SEARCH_URL;
+        await invalidateSearchAuth();
     }
 
     if (searchUrl === '') {
-        return null;
+        searchUrl = DEFAULT_SEARCH_URL;
     }
 
-    searchAuth = await fetchSearchAuth(searchUrl);
-    return searchAuth;
+    return await fetchSearchAuth(searchUrl);
 }
 
 async function fetchWithSearchAuth(
     callback: (auth: SearchAuth) => Promise<Response>
 ) {
+    await ensureBootstrapCacheLoaded();
+
     let auth = searchAuth || (await refreshSearchAuth());
     if (auth === null) {
         return null;
@@ -276,6 +375,16 @@ async function fetchWithSearchAuth(
         return results;
     }
 
+    await invalidateSearchAuth();
+    auth = await refreshSearchAuth();
+    if (auth !== null) {
+        results = await callback(auth);
+        if (results.status === 200) {
+            return results;
+        }
+    }
+
+    await invalidateSearchAuth();
     auth = await refreshSearchAuth(true);
     if (auth === null) {
         return null;
