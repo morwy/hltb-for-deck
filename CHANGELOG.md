@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.8] - 2026-04-09
+
+### 🐛 Bug Fixes
+
+- Restore functionality after recent HLTB API changes (#49) by @felixhirschfeld
+- Adjustments for SteamOS Beta UI changes in v.3.7.20 (#48) by @skynetua
+
 ## [2.0.7] - 2026-02-11
 
 ### 🐛 Bug Fixes
