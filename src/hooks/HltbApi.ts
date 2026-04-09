@@ -2,39 +2,150 @@ import { fetchNoCors } from '@decky/api';
 import { get } from 'fast-levenshtein';
 import { normalize } from '../utils';
 import {
+    clearApiBootstrapCache,
+    getApiBootstrapCache,
+    updateApiBootstrapCache,
+} from './Cache';
+import {
     GameData,
     GamePageData,
     HLTBGameStats,
     SearchResults,
 } from './GameInfoData';
 
-// NOTE: Close reproduction of https://github.com/ScrappyCocco/HowLongToBeat-PythonAPI/pull/53
-const AuthToken = Symbol('Auth Token');
-let searchUrl: string = '';
+// Keep one browser-like user agent for the related HLTB auth/search requests.
+// Related Python API fix: https://github.com/ScrappyCocco/HowLongToBeat-PythonAPI/pull/53
+// We could randomize it later if we still reuse the same value consistently.
+const USER_AGENT =
+    'Chrome: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36';
+const DEFAULT_SEARCH_URL = '/api/find';
 
-async function fetchAuthToken(): Promise<string | null> {
+interface SearchAuth {
+    token: string;
+    hpKey: string;
+    hpVal: string;
+}
+
+let searchUrl: string = '';
+let searchAuth: SearchAuth | null = null;
+let bootstrapCacheLoaded = false;
+
+function getBaseHeaders() {
+    return {
+        'Content-Type': 'application/json',
+        Origin: 'https://howlongtobeat.com',
+        Referer: 'https://howlongtobeat.com/',
+        'User-Agent': USER_AGENT,
+    };
+}
+
+function getSearchHeaders(auth: SearchAuth) {
+    return {
+        ...getBaseHeaders(),
+        Authority: 'howlongtobeat.com',
+        'x-auth-token': auth.token,
+        'x-hp-key': auth.hpKey,
+        'x-hp-val': auth.hpVal,
+    };
+}
+
+function parseSearchAuth(data: unknown): SearchAuth | null {
+    if (!data || typeof data !== 'object') {
+        console.error('HLTB - unexpected auth response:', data);
+        return null;
+    }
+
+    const authData = data as Record<string, unknown>;
+    const token =
+        typeof authData.token === 'string' ? authData.token : undefined;
+    let hpKey: string | undefined;
+    let hpVal: string | undefined;
+
+    for (const [fieldName, fieldValue] of Object.entries(authData)) {
+        if (typeof fieldValue !== 'string') {
+            continue;
+        }
+
+        const lowerFieldName = fieldName.toLowerCase();
+        if (!hpKey && lowerFieldName.includes('key')) {
+            hpKey = fieldValue;
+        } else if (!hpVal && lowerFieldName.includes('val')) {
+            hpVal = fieldValue;
+        }
+    }
+
+    if (token && hpKey && hpVal) {
+        console.log('HLTB auth acquired');
+        return {
+            token,
+            hpKey,
+            hpVal,
+        };
+    }
+
+    console.error('HLTB - incomplete auth response:', data);
+    return null;
+}
+
+async function persistSearchBootstrap(
+    currentSearchUrl: string,
+    auth: SearchAuth
+) {
+    searchUrl = currentSearchUrl;
+    searchAuth = auth;
+    await updateApiBootstrapCache({
+        searchUrl: currentSearchUrl,
+        searchAuth: {
+            searchUrl: currentSearchUrl,
+            ...auth,
+        },
+    });
+}
+
+async function invalidateSearchAuth() {
+    searchAuth = null;
+    await clearApiBootstrapCache('searchAuth');
+}
+
+async function persistNextJsKey(nextJsKey: string) {
+    const nextJsCache = keyCache.get(NextJsKey);
+    if (nextJsCache) {
+        nextJsCache.key = nextJsKey;
+    }
+
+    await updateApiBootstrapCache({
+        nextJsKey,
+    });
+}
+
+async function invalidateNextJsKey() {
+    const nextJsCache = keyCache.get(NextJsKey);
+    if (nextJsCache) {
+        nextJsCache.key = null;
+    }
+
+    await clearApiBootstrapCache('nextJsKey');
+}
+
+async function fetchSearchAuth(
+    currentSearchUrl: string
+): Promise<SearchAuth | null> {
     try {
         const timestamp = Date.now();
-        const url = `https://howlongtobeat.com/api/finder/init?t=${timestamp}`;
+        const url = `https://howlongtobeat.com${currentSearchUrl}/init?t=${timestamp}`;
         const response = await fetchNoCors(url, {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                Origin: 'https://howlongtobeat.com',
-                Referer: 'https://howlongtobeat.com/',
-                'User-Agent':
-                    'Chrome: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
-            },
+            headers: getBaseHeaders(),
         });
 
         if (response.status === 200) {
             const data = await response.json();
-            const token = data?.token;
-            if (token) {
-                console.log('HLTB Auth Token acquired');
-                return token;
+            const auth = parseSearchAuth(data);
+            if (auth !== null) {
+                await persistSearchBootstrap(currentSearchUrl, auth);
             }
-            console.error('HLTB - no token in response:', data);
+
+            return auth;
         } else {
             console.error('HLTB - failed to get auth token:', response.status);
         }
@@ -42,13 +153,17 @@ async function fetchAuthToken(): Promise<string | null> {
         console.error('HLTB - error fetching auth token:', error);
     }
 
+    await invalidateSearchAuth();
     return null;
 }
 
 async function fetchSearchUrl(): Promise<string | null> {
     try {
         const url = 'https://howlongtobeat.com';
-        const response = await fetchNoCors(url);
+        const origin = new URL(url).origin;
+        const response = await fetchNoCors(url, {
+            headers: getBaseHeaders(),
+        });
 
         if (response.status === 200) {
             const html = await response.text();
@@ -57,35 +172,49 @@ async function fetchSearchUrl(): Promise<string | null> {
             const scripts = doc.querySelectorAll('script');
 
             for (const script of scripts) {
-                if (script.src.includes('_app-')) {
-                    const scriptUrl = url + new URL(script.src).pathname;
-                    const scriptResponse = await fetchNoCors(scriptUrl);
+                if (!script.src) {
+                    continue;
+                }
 
-                    if (scriptResponse.status === 200) {
-                        const scriptText = await scriptResponse.text();
-                        // Find the path suffix after /api/ (e.g., "search" or "find/v2")
-                        const pattern =
-                            /fetch\s*\(\s*["']\/api\/([a-zA-Z0-9_\/]+)[^"']*["']\s*,\s*{[^}]*method:\s*["']POST["'][^}]*}/gi;
-                        const matches = pattern.exec(scriptText);
+                const scriptUrl = new URL(script.src, `${url}/`);
+                if (
+                    scriptUrl.origin !== origin ||
+                    !scriptUrl.pathname.endsWith('.js')
+                ) {
+                    continue;
+                }
 
-                        if (matches && matches[1]) {
-                            const pathSuffix = matches[1];
-                            // Determine the root path (e.g., "search" from "search/v2")
-                            // This ensures we get the base endpoint name even if sub-paths are used.
-                            const basePath = pathSuffix.includes('/')
-                                ? pathSuffix.split('/')[0]
-                                : pathSuffix;
-                            if (basePath !== 'find') {
-                                searchUrl = `/api/${basePath}`;
-                                console.log('HLTB Search URL:', searchUrl);
-                                return searchUrl;
-                            }
-                        }
-                    }
+                const scriptResponse = await fetchNoCors(scriptUrl.toString(), {
+                    headers: getBaseHeaders(),
+                });
+
+                if (scriptResponse.status !== 200) {
+                    continue;
+                }
+
+                const scriptText = await scriptResponse.text();
+                // Find the path suffix after /api/ (e.g., "search" or "find/v2")
+                const pattern =
+                    /fetch\s*\(\s*["']\/api\/([a-zA-Z0-9_\/]+)[^"']*["']\s*,\s*{[^}]*method:\s*["']POST["'][^}]*}/gi;
+                const matches = pattern.exec(scriptText);
+
+                if (matches && matches[1]) {
+                    const pathSuffix = matches[1];
+                    // Determine the root path (e.g., "search" from "search/v2")
+                    // This ensures we get the base endpoint name even if sub-paths are used.
+                    const basePath = pathSuffix.includes('/')
+                        ? pathSuffix.split('/')[0]
+                        : pathSuffix;
+                    const discoveredSearchUrl = `/api/${basePath}`;
+                    console.log('HLTB Search URL:', discoveredSearchUrl);
+                    return discoveredSearchUrl;
                 }
             }
 
-            console.error('HLTB - failed to find search URL!');
+            console.warn(
+                `HLTB - failed to discover search URL, falling back to ${DEFAULT_SEARCH_URL}`
+            );
+            return DEFAULT_SEARCH_URL;
         } else {
             console.error('HLTB', response);
         }
@@ -100,7 +229,9 @@ const NextJsKey = Symbol('NextJs Key');
 async function fetchNextJsKey() {
     try {
         const url = 'https://howlongtobeat.com';
-        const response = await fetchNoCors(url);
+        const response = await fetchNoCors(url, {
+            headers: getBaseHeaders(),
+        });
 
         if (response.status === 200) {
             const html = await response.text();
@@ -137,14 +268,43 @@ async function fetchNextJsKey() {
 const keyCache = new Map<
     symbol,
     { key: string | null; keyFetch: () => Promise<string | null> }
->([
-    [AuthToken, { key: null, keyFetch: fetchAuthToken }],
-    [NextJsKey, { key: null, keyFetch: fetchNextJsKey }],
-]);
+>([[NextJsKey, { key: null, keyFetch: fetchNextJsKey }]]);
+
+async function ensureBootstrapCacheLoaded() {
+    if (bootstrapCacheLoaded) {
+        return;
+    }
+
+    bootstrapCacheLoaded = true;
+
+    const bootstrapCache = await getApiBootstrapCache();
+    searchUrl = bootstrapCache?.searchUrl || DEFAULT_SEARCH_URL;
+
+    if (
+        bootstrapCache?.searchAuth &&
+        bootstrapCache.searchAuth.searchUrl === searchUrl
+    ) {
+        searchAuth = {
+            token: bootstrapCache.searchAuth.token,
+            hpKey: bootstrapCache.searchAuth.hpKey,
+            hpVal: bootstrapCache.searchAuth.hpVal,
+        };
+    } else {
+        searchAuth = null;
+    }
+
+    const nextJsCache = keyCache.get(NextJsKey);
+    if (nextJsCache) {
+        nextJsCache.key = bootstrapCache?.nextJsKey ?? null;
+    }
+}
+
 async function fetchWithKey(
     keyName: symbol,
     callback: (key: string) => Promise<Response>
 ) {
+    await ensureBootstrapCacheLoaded();
+
     let cache = keyCache.get(keyName);
     if (!cache) {
         console.error('HLTB - failed to get cache item for', keyName);
@@ -157,29 +317,84 @@ async function fetchWithKey(
         return null;
     }
 
+    if (keyName === NextJsKey) {
+        await persistNextJsKey(cache.key);
+    }
+
     const results = await callback(cache.key);
     if (results.status === 200) {
         return results;
     }
 
     // Key might have expired, fetch a new one and try again
+    if (keyName === NextJsKey) {
+        await invalidateNextJsKey();
+    }
+
     cache.key = await cache.keyFetch();
     if (cache.key === null) {
         // error already logged
         return null;
     }
 
+    if (keyName === NextJsKey) {
+        await persistNextJsKey(cache.key);
+    }
+
     // Whatever the response is, we propagate it to be logged
     return await callback(cache.key);
 }
 
-async function fetchSearchResultsWithAuthToken(
-    gameName: string,
-    authToken: string
-) {
-    if (searchUrl === '') {
-        searchUrl = (await fetchSearchUrl()) || '/api/finder';
+async function refreshSearchAuth(refreshSearchPath = false) {
+    await ensureBootstrapCacheLoaded();
+
+    if (refreshSearchPath) {
+        searchUrl = (await fetchSearchUrl()) || DEFAULT_SEARCH_URL;
+        await invalidateSearchAuth();
     }
+
+    if (searchUrl === '') {
+        searchUrl = DEFAULT_SEARCH_URL;
+    }
+
+    return await fetchSearchAuth(searchUrl);
+}
+
+async function fetchWithSearchAuth(
+    callback: (auth: SearchAuth) => Promise<Response>
+) {
+    await ensureBootstrapCacheLoaded();
+
+    let auth = searchAuth || (await refreshSearchAuth());
+    if (auth === null) {
+        return null;
+    }
+
+    let results = await callback(auth);
+    if (results.status === 200) {
+        return results;
+    }
+
+    await invalidateSearchAuth();
+    auth = await refreshSearchAuth();
+    if (auth !== null) {
+        results = await callback(auth);
+        if (results.status === 200) {
+            return results;
+        }
+    }
+
+    await invalidateSearchAuth();
+    auth = await refreshSearchAuth(true);
+    if (auth === null) {
+        return null;
+    }
+
+    results = await callback(auth);
+    return results;
+}
+
+async function fetchSearchResultsWithAuth(gameName: string, auth: SearchAuth) {
     const data = {
         searchType: 'games',
         searchTerms: gameName.split(' '),
@@ -205,26 +420,19 @@ async function fetchSearchResultsWithAuthToken(
             sort: 0,
             randomizer: 0,
         },
+        [auth.hpKey]: auth.hpVal,
     };
 
     return fetchNoCors(`https://howlongtobeat.com${searchUrl}`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Origin: 'https://howlongtobeat.com',
-            Referer: 'https://howlongtobeat.com/',
-            Authority: 'howlongtobeat.com',
-            'x-auth-token': authToken,
-            'User-Agent':
-                'Chrome: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
-        },
+        headers: getSearchHeaders(auth),
         body: JSON.stringify(data),
     });
 }
 
 async function fetchSearchResults(appName: string) {
-    const response = await fetchWithKey(AuthToken, (token) =>
-        fetchSearchResultsWithAuthToken(appName, token)
+    const response = await fetchWithSearchAuth((auth) =>
+        fetchSearchResultsWithAuth(appName, auth)
     );
     if (!response) {
         // Error already logged
