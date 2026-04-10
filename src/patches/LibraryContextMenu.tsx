@@ -10,8 +10,45 @@ import {
 
 import { HLTBContextMenuItem } from '../components/HLTBContextMenuItem';
 
+const getOverviewAppId = (component: any): number | null =>
+    component?._owner?.pendingProps?.overview?.appid ?? null;
+
+const getTreeAppId = (tree: any): number | null => {
+    const appData = findInTree(tree, (x) => x?.app?.appid, {
+        walkable: ['props', 'children'],
+    });
+
+    return appData?.app?.appid ?? null;
+};
+
+const resolveComponentAppId = (component: any): number | null =>
+    getOverviewAppId(component) ?? getTreeAppId(component?.props?.children);
+
+const resolveUpdatedAppId = (
+    children: any[],
+    currentAppId: number | null
+): number | null => {
+    if (!Array.isArray(children)) {
+        return null;
+    }
+
+    const parentOverview = children.find((item) => {
+        const componentAppId = getOverviewAppId(item) ?? getTreeAppId(item);
+        return componentAppId !== null && componentAppId !== currentAppId;
+    });
+
+    if (parentOverview) {
+        return getOverviewAppId(parentOverview) ?? getTreeAppId(parentOverview);
+    }
+
+    return getTreeAppId(children) ?? currentAppId;
+};
+
 const addStatsSettingsMenuItem = (children: any[], appId: number) => {
-    children.find((x: any) => x?.key === 'properties');
+    if (!Array.isArray(children)) {
+        return;
+    }
+
     // Find the index of the menu item for the game's properties
     const propertiesMenuItem = children.findIndex((item) =>
         findInReactTree(
@@ -21,12 +58,30 @@ const addStatsSettingsMenuItem = (children: any[], appId: number) => {
                 x.onSelected.toString().includes('AppProperties')
         )
     );
+
+    if (propertiesMenuItem === -1) {
+        return;
+    }
+
     // Add the HLTB Stats Setting Menu Item before the Properties Menu Item
     children.splice(
         propertiesMenuItem,
         0,
         <HLTBContextMenuItem appId={`${appId}`} />
     );
+};
+
+const removeStatsSettingsMenuItem = (children: any[]) => {
+    if (!Array.isArray(children)) {
+        return;
+    }
+
+    const hltbIndex = children.findIndex(
+        (x: any) => x?.key === 'hltb-for-deck-stats-settings'
+    );
+    if (hltbIndex !== -1) {
+        children.splice(hltbIndex, 1);
+    }
 };
 
 const contextMenuPatch = (LibraryContextMenu: any) => {
@@ -38,89 +93,40 @@ const contextMenuPatch = (LibraryContextMenu: any) => {
     } = {
         unpatch: () => null,
     };
+    let currentAppId: number | null = null;
 
     patches.patchOne = afterPatch(
         LibraryContextMenu.prototype,
         'render',
         (_: Record<string, unknown>[], component: any) => {
             // Get the current app's ID
-            let appid: number;
-            if (component._owner) {
-                appid = component._owner.pendingProps.overview.appid;
-            } else {
-                // Oct 2025 client, SteamOS stable 3.7.17
-                appid = findInTree(
-                    component.props.children,
-                    (x) => x?.app?.appid,
-                    { walkable: ['props', 'children'] }
-                ).app.appid;
+            const appid = resolveComponentAppId(component);
+            currentAppId = appid;
+
+            if (appid === null) {
+                return component;
             }
+
             if (!patches.patchTwo) {
                 patches.patchTwo = afterPatch(
                     component.type.prototype,
                     'shouldComponentUpdate',
                     ([nextProps]: any, shouldUpdate: boolean) => {
-                        try {
-                            const hltbIndex = nextProps.children.findIndex(
-                                (x: any) =>
-                                    x?.key === 'hltb-for-deck-stats-settings'
-                            );
-                            hltbIndex != -1 &&
-                                nextProps.children.splice(hltbIndex, 1);
-                        } catch (e) {
-                            return component;
-                        }
+                        removeStatsSettingsMenuItem(nextProps.children);
 
                         if (shouldUpdate === true) {
-                            let updatedAppid = appid;
-                            // find the first menu component where there is a different app id than the current one
-                            const parentOverview = nextProps.children.find(
-                                (x: any) => {
-                                    let componentAppid;
-                                    if (
-                                        x?._owner?.pendingProps?.overview?.appid
-                                    ) {
-                                        componentAppid =
-                                            x._owner.pendingProps.overview
-                                                .appid;
-                                    } else {
-                                        // Oct 2025 client, SteamOS stable 3.7.17 - try to find appid in the tree
-                                        const appData = findInTree(
-                                            x,
-                                            (y) => y?.app?.appid,
-                                            { walkable: ['props', 'children'] }
-                                        );
-                                        componentAppid = appData?.app?.appid;
-                                    }
-                                    return (
-                                        componentAppid &&
-                                        componentAppid !== appid
-                                    );
-                                }
-                            );
-                            // if found then use that appid
-                            if (parentOverview) {
-                                if (
-                                    parentOverview._owner?.pendingProps
-                                        ?.overview?.appid
-                                ) {
-                                    updatedAppid =
-                                        parentOverview._owner.pendingProps
-                                            .overview.appid;
-                                } else {
-                                    // Oct 2025 client, SteamOS stable 3.7.17
-                                    const appData = findInTree(
-                                        parentOverview,
-                                        (x) => x?.app?.appid,
-                                        { walkable: ['props', 'children'] }
-                                    );
-                                    updatedAppid = appData?.app?.appid;
-                                }
-                            }
-                            addStatsSettingsMenuItem(
+                            const updatedAppid = resolveUpdatedAppId(
                                 nextProps.children,
-                                updatedAppid
+                                currentAppId
                             );
+
+                            currentAppId = updatedAppid;
+                            if (updatedAppid !== null) {
+                                addStatsSettingsMenuItem(
+                                    nextProps.children,
+                                    updatedAppid
+                                );
+                            }
                         }
 
                         return shouldUpdate;
