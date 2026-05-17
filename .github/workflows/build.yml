@@ -39,7 +39,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build
+      - name: Build the plugin
         run: pnpm run build
 
       - name: Create package structure
