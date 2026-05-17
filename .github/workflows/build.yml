@@ -2,7 +2,7 @@ name: Build and Release HLTB for Deck
 
 on: 
   workflow_dispatch: # Creating releases manually via GUI.
-  pull_request: # Creating releases via PRs to main branch.
+  pull_request_target: # Creating releases via PRs to main branch.
     types: [opened, synchronize, reopened]
 
 jobs:
@@ -16,6 +16,8 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          repository: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.ref }}
 
       - name: Increment npm version
         uses: reecetech/version-increment@2024.10.1
