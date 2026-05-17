@@ -10,6 +10,7 @@ jobs:
       runs-on: ubuntu-latest
       permissions:
           contents: write
+          issues: write
 
       steps:
       - uses: actions/checkout@v6
@@ -55,7 +56,30 @@ jobs:
         run: |
           zip -r hltb-for-deck.zip hltb-for-deck/*
           tar -czvf hltb-for-deck.tar.gz hltb-for-deck
-      
+
+      - name: Upload built binaries
+        uses: actions/upload-artifact@v7
+        with:
+          name: hltb-for-deck
+          path: |
+            hltb-for-deck.zip
+            hltb-for-deck.tar.gz
+          if-no-files-found: error
+
+      - name: Attach built binaries link on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number
+            const artifactUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/suites/${process.env.GITHUB_RUN_ID}/artifacts`
+            const body = `Built binaries for this PR are available as workflow artifacts:\n\n- **[Download artifacts](${artifactUrl})**\n- hltb-for-deck.zip\n- hltb-for-deck.tar.gz\n\nThis link is valid while the workflow run artifacts are retained.`
+            github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: prNumber,
+              body,
+            })
+
       - name: Generate a changelog
         if: github.ref_name == 'main'
         uses: orhun/git-cliff-action@v4
