@@ -7,14 +7,10 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-    increment-version:
+    build:
       runs-on: ubuntu-latest
       permissions:
           contents: write
-      outputs:
-        BRANCH_NAME: ${{ steps.read_branch.outputs.branch_name }}
-        NEW_TAG_NAME: ${{ steps.increment-npm-version.outputs.v-version }}
-        RELEASE_ENTRY_TEXT: ${{ steps.git-cliff-release-entry.outputs.content }}
 
       steps:
       - uses: actions/checkout@v6
@@ -38,6 +34,34 @@ jobs:
         with:
           version: ${{ steps.increment-npm-version.outputs.version }} 
 
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.13'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Create package structure
+        run: |
+          cp plugin.json ./dist/
+          cp package.json ./dist/
+          mkdir ./dist/dist
+          rm ./dist/index.js.map
+          mv ./dist/index.js ./dist/dist/
+          mv ./dist ./hltb-for-deck
+
+      - name: Archive built files
+        run: |
+          zip -r hltb-for-deck.zip hltb-for-deck/*
+          tar -czvf hltb-for-deck.tar.gz hltb-for-deck
+      
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v4
         id: git-cliff-release-entry
@@ -65,80 +89,10 @@ jobs:
           branch: ${{ steps.read_branch.outputs.branch_name }}
           commit_message: "chore(release): preparing for upcoming release (CHANGELOG.md, package.json)"
 
-    build:
-        runs-on: ubuntu-latest
-        permissions:
-            contents: write
-        needs: [increment-version]
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v6
-              with:
-                ref: ${{ needs.increment-version.outputs.BRANCH_NAME }}
-                fetch-depth: 0
-
-            - name: Fetch the latest changes
-              run: git pull origin ${{ needs.increment-version.outputs.BRANCH_NAME }}
-
-            - name: Setup node
-              uses: actions/setup-node@v6
-              with:
-                  node-version: '22.13'
-
-            - name: Install pnpm
-              run: npm install -g pnpm
-
-            - name: Install dependencies
-              run: pnpm install
-
-            - name: Build
-              run: pnpm run build
-
-            - name: Create package structure
-              run: |
-                  cp plugin.json ./dist/
-                  cp package.json ./dist/
-                  mkdir ./dist/dist
-                  rm ./dist/index.js.map
-                  mv ./dist/index.js ./dist/dist/
-                  mv ./dist ./hltb-for-deck
-
-            - name: Archive built files
-              run: |
-                  zip -r hltb-for-deck.zip hltb-for-deck/*
-                  tar -czvf hltb-for-deck.tar.gz hltb-for-deck
-            
-            - name: Upload artifacts
-              uses: actions/upload-artifact@v7
-              with:
-                  name: hltb-for-deck
-                  path:  |
-                    hltb-for-deck.zip
-                    hltb-for-deck.tar.gz
-                  if-no-files-found: error
-
-    release:
-        runs-on: ubuntu-latest
-        permissions:
-            contents: write
-        needs: [increment-version, build]
+      - name: Create a release
         if: github.ref_name == 'main'
-
-        steps:
-            - uses: actions/checkout@v6
-
-            - name: Downloading all built binaries
-              uses: actions/download-artifact@v8
-              with:
-                path: ${{ github.workspace }}
-                name: hltb-for-deck
-        
-            - name: List all built binaries
-              run: ls -R
-
-            - name: Create a release
-              uses: ncipollo/release-action@v1
-              with:
-                body: "${{ needs.increment-version.outputs.RELEASE_ENTRY_TEXT }}"
-                tag: "${{ needs.increment-version.outputs.NEW_TAG_NAME }}"
-                artifacts: "*.zip, *.tar.gz"
+        uses: ncipollo/release-action@v1
+        with:
+          body: "${{ steps.git-cliff-release-entry.outputs.content }}"
+          tag: "${{ steps.increment-npm-version.outputs.v-version }}"
+          artifacts: "*.zip, *.tar.gz"
