@@ -1,9 +1,8 @@
 name: Build and Release HLTB for Deck
 
-# Creating releases manually via GUI.
 on: 
-  workflow_dispatch:
-  pull_request:
+  workflow_dispatch: # Creating releases manually via GUI.
+  pull_request: # Creating releases via PRs to main branch.
     types: [opened, synchronize, reopened]
 
 jobs:
@@ -68,7 +67,6 @@ jobs:
 
       - name: Get changelog since last release
         uses: orhun/git-cliff-action@v4
-        id: git-cliff-file
         with:
           config: cliff.toml
           args: --verbose --tag ${{ steps.increment-npm-version.outputs.v-version }}
@@ -77,7 +75,6 @@ jobs:
 
       - name: Commit CHANGELOG.md and package.json
         if: github.ref_name == 'main'
-        id: change-log-commit
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           file_pattern: 'CHANGELOG.md package.json'
