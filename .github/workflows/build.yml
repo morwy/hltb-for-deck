@@ -57,6 +57,7 @@ jobs:
           tar -czvf hltb-for-deck.tar.gz hltb-for-deck
       
       - name: Generate a changelog
+        if: github.ref_name == 'main'
         uses: orhun/git-cliff-action@v4
         id: git-cliff-release-entry
         with:
@@ -66,6 +67,7 @@ jobs:
           OUTPUT: CHANGES.md
 
       - name: Get changelog since last release
+        if: github.ref_name == 'main'
         uses: orhun/git-cliff-action@v4
         with:
           config: cliff.toml
