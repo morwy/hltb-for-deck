@@ -17,11 +17,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Read branch name
-        id: read_branch
-        shell: bash
-        run: echo "branch_name=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-
       - name: Increment npm version
         uses: reecetech/version-increment@2024.10.1
         id: increment-npm-version
@@ -86,7 +81,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           file_pattern: 'CHANGELOG.md package.json'
-          branch: ${{ steps.read_branch.outputs.branch_name }}
+          branch: ${{ github.ref_name }}
           commit_message: "chore(release): preparing for upcoming release (CHANGELOG.md, package.json)"
 
       - name: Create a release
