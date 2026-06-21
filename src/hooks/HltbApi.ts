@@ -26,6 +26,11 @@ interface SearchAuth {
     hpVal: string;
 }
 
+interface SearchResultsState {
+    appName: string;
+    results: SearchResults;
+}
+
 let searchUrl: string = '';
 let searchAuth: SearchAuth | null = null;
 let bootstrapCacheLoaded = false;
@@ -533,6 +538,87 @@ async function fetchSearchResults(appName: string) {
     return results;
 }
 
+async function fetchEnglishSteamAppName(appId: number): Promise<string | null> {
+    try {
+        const response = await fetchNoCors(
+            `https://store.steampowered.com/api/appdetails?appids=${appId}&l=en`,
+            {
+                method: 'GET',
+                headers: {
+                    'User-Agent': USER_AGENT,
+                },
+            }
+        );
+
+        if (response.status !== 200) {
+            console.error(
+                'HLTB - failed to fetch English Steam app details:',
+                response.status
+            );
+            return null;
+        }
+
+        const data = await response.json();
+        if (!data || typeof data !== 'object') {
+            console.error('HLTB - unexpected Steam app details:', data);
+            return null;
+        }
+
+        const appData = (data as Record<string, unknown>)[String(appId)];
+        if (!appData || typeof appData !== 'object') {
+            console.error('HLTB - missing Steam app data:', data);
+            return null;
+        }
+
+        const details = appData as Record<string, unknown>;
+        if (details.success !== true) {
+            console.error('HLTB - Steam app details lookup failed:', details);
+            return null;
+        }
+
+        const name = (details.data as Record<string, unknown> | undefined)
+            ?.name;
+        if (typeof name !== 'string') {
+            console.error('HLTB - missing Steam app name:', details);
+            return null;
+        }
+
+        return normalize(name);
+    } catch (error) {
+        console.error('HLTB - error fetching English Steam app name:', error);
+        return null;
+    }
+}
+
+async function fetchSearchResultsState(
+    appName: string,
+    appId?: number
+): Promise<SearchResultsState | null> {
+    const results = await fetchSearchResults(appName);
+    if (results === null) {
+        return null;
+    }
+
+    if (results.data.length > 0 || typeof appId !== 'number') {
+        return { appName, results };
+    }
+
+    const englishAppName = await fetchEnglishSteamAppName(appId);
+    if (englishAppName === null || englishAppName === appName) {
+        return { appName, results };
+    }
+
+    const englishResults = await fetchSearchResults(englishAppName);
+    if (englishResults === null) {
+        return null;
+    }
+
+    return {
+        appName: englishAppName,
+        results: englishResults,
+    };
+}
+
 async function fetchGamePageDataWithKey(gameId: number, apiKey: string) {
     return fetchNoCors(
         `https://howlongtobeat.com/_next/data/${apiKey}/game/${gameId}.json`,
@@ -609,11 +695,13 @@ async function fetchMostCompatibleGameData(
         return await fetchGameData(hltbGameId);
     }
 
-    const searchResults = await fetchSearchResults(appName);
-    if (searchResults === null) {
+    const searchState = await fetchSearchResultsState(appName, appId);
+    if (searchState === null) {
         // Error already logged
         return null;
     }
+
+    const { appName: resolvedAppName, results: searchResults } = searchState;
 
     const gameDataCache = new Map<number, GameData>();
     const getGameData = async (gameId: number) => {
@@ -639,7 +727,7 @@ async function fetchMostCompatibleGameData(
 
     // Search by app name if not found by appId
     for (const item of searchResults.data) {
-        if (item.game_name === appName) {
+        if (item.game_name === resolvedAppName) {
             return getGameData(item.game_id);
         }
     }
@@ -649,7 +737,7 @@ async function fetchMostCompatibleGameData(
         const possibleChoices = searchResults.data
             .map((item) => {
                 return {
-                    minEditDistance: get(appName, item.game_name, {
+                    minEditDistance: get(resolvedAppName, item.game_name, {
                         useCollator: true,
                     }),
                     item,
