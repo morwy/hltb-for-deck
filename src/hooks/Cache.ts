@@ -149,8 +149,8 @@ export async function getStatPreferences(): Promise<StatPreferences | null> {
     return preferences;
 }
 
-export const clearCache = () => {
-    const style = getStyle();
-    localforage.clear();
-    updateCache(styleKey, style);
+export const clearCache = async () => {
+    const style = await getStyle();
+    await localforage.clear();
+    await updateCache(styleKey, style);
 };
