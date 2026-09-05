@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.10] - 2026-09-05
+
+### 🐛 Bug Fixes
+
+- Preserve nested HLTB search API paths (#63) by @beallio
+
 ## [2.0.9] - 2026-05-15
 
 ### 🐛 Bug Fixes
@@ -102,6 +108,10 @@
 
 - Cache API key on demand by @FrogTheFrog
 
+### 🐛 Bug Fixes
+
+- Use DOM to detect game launch transitions by @FrogTheFrog
+
 ## [1.4.5] - 2024-08-20
 
 ### 🚀 Features
@@ -112,7 +122,6 @@
 ### 🐛 Bug Fixes
 
 - Use new path for app window patching by @FrogTheFrog
-- Use DOM to detect game launch transitions by @FrogTheFrog
 
 ## [1.4.4] - 2024-08-04
 
