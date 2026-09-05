@@ -18,7 +18,7 @@ import {
 // We could randomize it later if we still reuse the same value consistently.
 const USER_AGENT =
     'Chrome: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36';
-const DEFAULT_SEARCH_URL = '/api/bleed';
+const DEFAULT_SEARCH_URL = '/api/search/site';
 
 interface SearchAuth {
     token: string;
@@ -109,13 +109,17 @@ function extractSearchUrlFromScript(scriptText: string): string | null {
             continue;
         }
 
-        const pathSuffix = match[1];
-        const basePath = pathSuffix.includes('/')
-            ? pathSuffix.split('/')[0]
-            : pathSuffix;
-        const discoveredSearchUrl = `/api/${basePath}`;
+        // Keep the whole path. HLTB moved from single-segment routes such as
+        // /api/bleed to nested ones such as /api/search/site, so truncating at
+        // the first slash makes every request 404.
+        const searchPath = match[1].replace(/\/+$/, '').replace(/\/init$/i, '');
+        if (!searchPath) {
+            continue;
+        }
+
+        const discoveredSearchUrl = `/api/${searchPath}`;
         const initPattern = new RegExp(
-            `\\/api\\/${escapeRegex(basePath)}\\/init`,
+            `\\/api\\/${escapeRegex(searchPath)}\\/init`,
             'i'
         );
 
