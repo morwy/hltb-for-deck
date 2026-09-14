@@ -18,7 +18,7 @@ import {
 // We could randomize it later if we still reuse the same value consistently.
 const USER_AGENT =
     'Chrome: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36';
-const DEFAULT_SEARCH_URL = '/api/find';
+const DEFAULT_SEARCH_URL = '/api/search/site';
 
 interface SearchAuth {
     token: string;
@@ -90,6 +90,75 @@ function parseSearchAuth(data: unknown): SearchAuth | null {
 
     console.error('HLTB - incomplete auth response:', data);
     return null;
+}
+
+function escapeRegex(value: string) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function extractSearchUrlFromScript(scriptText: string): string | null {
+    if (
+        !scriptText.includes('searchTerms') ||
+        !scriptText.includes('searchOptions')
+    ) {
+        return null;
+    }
+
+    const pattern =
+        /fetch\s*\(\s*["'`]\/api\/([a-zA-Z0-9_\/]+)[^"'`]*["'`]\s*,\s*{[^}]*method:\s*["'`]POST["'`][^}]*}/gi;
+    const candidates: string[] = [];
+    let match: RegExpExecArray | null;
+
+    while ((match = pattern.exec(scriptText)) !== null) {
+        if (!match[1]) {
+            continue;
+        }
+
+        // Keep the whole path. HLTB moved from single-segment routes such as
+        // /api/bleed to nested ones such as /api/search/site, so truncating at
+        // the first slash makes every request 404.
+        const searchPath = match[1].replace(/\/+$/, '').replace(/\/init$/i, '');
+        if (!searchPath) {
+            continue;
+        }
+
+        const discoveredSearchUrl = `/api/${searchPath}`;
+        const initPattern = new RegExp(
+            `\\/api\\/${escapeRegex(searchPath)}\\/init`,
+            'i'
+        );
+
+        if (initPattern.test(scriptText)) {
+            return discoveredSearchUrl;
+        }
+
+        candidates.push(discoveredSearchUrl);
+    }
+
+    return candidates[0] ?? null;
+}
+
+function extractScriptUrls(html: string, baseUrl: string) {
+    if (typeof DOMParser !== 'undefined') {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        return Array.from(doc.querySelectorAll('script'))
+            .map((script) => script.getAttribute('src'))
+            .filter((src): src is string => Boolean(src))
+            .map((src) => new URL(src, `${baseUrl}/`).toString());
+    }
+
+    const scripts: string[] = [];
+    const pattern = /<script\b[^>]*\bsrc=(["'])(.*?)\1[^>]*>/gi;
+    let match: RegExpExecArray | null;
+
+    while ((match = pattern.exec(html)) !== null) {
+        if (match[2]) {
+            scripts.push(new URL(match[2], `${baseUrl}/`).toString());
+        }
+    }
+
+    return scripts;
 }
 
 async function persistSearchBootstrap(
@@ -172,16 +241,10 @@ async function fetchSearchUrl(): Promise<string | null> {
 
         if (response.status === 200) {
             const html = await response.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const scripts = doc.querySelectorAll('script');
+            const scripts = extractScriptUrls(html, url);
 
-            for (const script of scripts) {
-                if (!script.src) {
-                    continue;
-                }
-
-                const scriptUrl = new URL(script.src, `${url}/`);
+            for (const scriptSrc of scripts) {
+                const scriptUrl = new URL(scriptSrc, `${url}/`);
                 if (
                     scriptUrl.origin !== origin ||
                     !scriptUrl.pathname.endsWith('.js')
@@ -197,20 +260,11 @@ async function fetchSearchUrl(): Promise<string | null> {
                     continue;
                 }
 
-                const scriptText = await scriptResponse.text();
-                // Find the path suffix after /api/ (e.g., "search" or "find/v2")
-                const pattern =
-                    /fetch\s*\(\s*["']\/api\/([a-zA-Z0-9_\/]+)[^"']*["']\s*,\s*{[^}]*method:\s*["']POST["'][^}]*}/gi;
-                const matches = pattern.exec(scriptText);
+                const discoveredSearchUrl = extractSearchUrlFromScript(
+                    await scriptResponse.text()
+                );
 
-                if (matches && matches[1]) {
-                    const pathSuffix = matches[1];
-                    // Determine the root path (e.g., "search" from "search/v2")
-                    // This ensures we get the base endpoint name even if sub-paths are used.
-                    const basePath = pathSuffix.includes('/')
-                        ? pathSuffix.split('/')[0]
-                        : pathSuffix;
-                    const discoveredSearchUrl = `/api/${basePath}`;
+                if (discoveredSearchUrl) {
                     console.log('HLTB Search URL:', discoveredSearchUrl);
                     return discoveredSearchUrl;
                 }
@@ -353,7 +407,7 @@ async function fetchWithKey(
 async function refreshSearchAuth(refreshSearchPath = false) {
     await ensureBootstrapCacheLoaded();
 
-    if (refreshSearchPath) {
+    if (refreshSearchPath || searchUrl === '') {
         searchUrl = (await fetchSearchUrl()) || DEFAULT_SEARCH_URL;
         await invalidateSearchAuth();
     }
@@ -362,6 +416,13 @@ async function refreshSearchAuth(refreshSearchPath = false) {
         searchUrl = DEFAULT_SEARCH_URL;
     }
 
+    const auth = await fetchSearchAuth(searchUrl);
+    if (auth !== null || refreshSearchPath) {
+        return auth;
+    }
+
+    await invalidateSearchAuth();
+    searchUrl = (await fetchSearchUrl()) || DEFAULT_SEARCH_URL;
     return await fetchSearchAuth(searchUrl);
 }
 
