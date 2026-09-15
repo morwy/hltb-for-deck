@@ -68,17 +68,16 @@ jobs:
     build:
         runs-on: ubuntu-latest
         permissions:
-            contents: write
+            contents: read
         needs: [increment-version]
         steps:
             - name: Checkout repository
               uses: actions/checkout@v7
               with:
-                ref: ${{ needs.increment-version.outputs.BRANCH_NAME }}
+                # PRs use the merge ref; manual builds follow the branch after the version commit.
+                ref: ${{ github.event_name == 'workflow_dispatch' && needs.increment-version.outputs.BRANCH_NAME || '' }}
                 fetch-depth: 0
-
-            - name: Fetch the latest changes
-              run: git pull origin ${{ needs.increment-version.outputs.BRANCH_NAME }}
+                persist-credentials: false
 
             - name: Setup node
               uses: actions/setup-node@v7
@@ -86,10 +85,13 @@ jobs:
                   node-version: '22.13'
 
             - name: Install pnpm
-              run: npm install -g pnpm
+              run: npm install -g pnpm@9.15.9
 
             - name: Install dependencies
-              run: pnpm install
+              run: pnpm install --frozen-lockfile
+
+            - name: Test
+              run: pnpm test -- --runInBand
 
             - name: Build
               run: pnpm run build
