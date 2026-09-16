@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.0.11] - 2026-09-16
+
+### 🐛 Bug Fixes
+
+- Retry hltb search with the en game title for localized games
+- *(ci)* Build and test fork pull requests by @felixhirschfeld
+- *(ci)* Build and test fork pull requests (#66) by @felixhirschfeld
+- Guard context menu lookup and update Decky dependencies by @felixhirschfeld
+- Restore HLTB loading on Steam Client beta (#65) by @felixhirschfeld
+- Improve HLTB search for localized game titles (#50) by @felixhirschfeld
+
+### 📚 Documentation
+
+- Added information on how to send plugin update to the Decky Plugin Database by @morwy
+
 ## [2.0.10] - 2026-09-05
 
 ### 🐛 Bug Fixes
