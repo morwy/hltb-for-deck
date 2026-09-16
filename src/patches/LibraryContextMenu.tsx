@@ -6,6 +6,7 @@ import {
     findModuleChild,
     Patch,
     findInTree,
+    removeHookStubs,
 } from '@decky/ui';
 
 import { HLTBContextMenuItem } from '../components/HLTBContextMenuItem';
@@ -84,7 +85,72 @@ const removeStatsSettingsMenuItem = (children: any[]) => {
     }
 };
 
-const contextMenuPatch = (LibraryContextMenu: any) => {
+const getFunctionSource = (value: unknown): string => {
+    if (typeof value !== 'function') {
+        return '';
+    }
+
+    try {
+        const source = value.toString();
+        if (typeof source === 'string') {
+            return source;
+        }
+    } catch {
+        // Fall back to the native source for patched or unusual exports.
+    }
+
+    try {
+        return Function.prototype.toString.call(value);
+    } catch {
+        return '';
+    }
+};
+
+const findLibraryContextMenu = () => {
+    const component = findModuleChild((module) => {
+        if (!module || typeof module !== 'object') {
+            return;
+        }
+
+        try {
+            const exports = Object.values(module);
+            if (
+                exports.some((value) =>
+                    getFunctionSource(value).includes('().LibraryContextMenu')
+                )
+            ) {
+                return exports.find((value) =>
+                    getFunctionSource(value).includes('navigator:')
+                );
+            }
+        } catch {
+            return;
+        }
+
+        return;
+    });
+
+    if (typeof component !== 'function') {
+        console.warn('HLTB - LibraryContextMenu component not found');
+        return null;
+    }
+
+    try {
+        const libraryContextMenu = fakeRenderComponent(component)?.type;
+        if (typeof libraryContextMenu?.prototype?.render === 'function') {
+            return libraryContextMenu;
+        }
+    } catch (error) {
+        removeHookStubs();
+        console.error('HLTB - failed to resolve LibraryContextMenu:', error);
+        return null;
+    }
+
+    console.warn('HLTB - LibraryContextMenu render method not found');
+    return null;
+};
+
+const contextMenuPatch = () => {
     // Variable for all patches applied to LibraryContextMenu
     const patches: {
         patchOne?: Patch;
@@ -94,6 +160,11 @@ const contextMenuPatch = (LibraryContextMenu: any) => {
         unpatch: () => null,
     };
     let currentAppId: number | null = null;
+
+    const LibraryContextMenu = findLibraryContextMenu();
+    if (!LibraryContextMenu) {
+        return patches;
+    }
 
     patches.patchOne = afterPatch(
         LibraryContextMenu.prototype,
@@ -107,7 +178,11 @@ const contextMenuPatch = (LibraryContextMenu: any) => {
                 return component;
             }
 
-            if (!patches.patchTwo) {
+            if (
+                !patches.patchTwo &&
+                typeof component?.type?.prototype?.shouldComponentUpdate ===
+                    'function'
+            ) {
                 patches.patchTwo = afterPatch(
                     component.type.prototype,
                     'shouldComponentUpdate',
@@ -146,22 +221,5 @@ const contextMenuPatch = (LibraryContextMenu: any) => {
     };
     return patches;
 };
-
-export const LibraryContextMenu = fakeRenderComponent(
-    findModuleChild((m) => {
-        if (typeof m !== 'object') return;
-        for (const prop in m) {
-            if (
-                m[prop]?.toString() &&
-                m[prop].toString().includes('().LibraryContextMenu')
-            ) {
-                return Object.values(m).find((sibling) =>
-                    sibling?.toString().includes('navigator:')
-                );
-            }
-        }
-        return;
-    })
-).type;
 
 export default contextMenuPatch;

@@ -14,8 +14,8 @@
     "devDependencies": {
         "@commitlint/cli": "^17.8.1",
         "@commitlint/config-conventional": "^17.8.1",
-        "@decky/rollup": "^1.0.1",
-        "@decky/ui": "^4.11.0",
+        "@decky/rollup": "^1.0.2",
+        "@decky/ui": "^4.12.1",
         "@types/fast-levenshtein": "^0.0.2",
         "@types/react": "^17.0.90",
         "@types/react-dom": "^18.3.7",
@@ -30,7 +30,7 @@
         "@types/jest": "^29.5.14"
     },
     "dependencies": {
-        "@decky/api": "^1.1.2",
+        "@decky/api": "^1.1.3",
         "fast-levenshtein": "^3.0.0",
         "hltb-for-deck": "link:",
         "localforage": "^1.10.0",
