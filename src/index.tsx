@@ -3,13 +3,11 @@ import { routerHook } from '@decky/api';
 import { FaGamepad } from 'react-icons/fa';
 import { patchAppPage } from './patches/LibraryApp';
 import { QuickAccessView } from './components/QuickAccessView/QuickAccessView';
-import contextMenuPatch, {
-    LibraryContextMenu,
-} from './patches/LibraryContextMenu';
+import contextMenuPatch from './patches/LibraryContextMenu';
 import { LoadingScreen } from './components/LoadingScreen';
 
 export default definePlugin(() => {
-    const libraryContextMenuPatch = contextMenuPatch(LibraryContextMenu);
+    const libraryContextMenuPatch = contextMenuPatch();
     const libraryAppPagePatch = patchAppPage();
     routerHook.addRoute('/hltb-for-deck/loading', LoadingScreen);
     return {
