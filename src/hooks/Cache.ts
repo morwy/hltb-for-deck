@@ -1,4 +1,5 @@
 import localforage from 'localforage';
+import { Appearance, normalizeAppearance } from '../appearance';
 import { HLTBStyle } from './useStyle';
 import { HLTBStats } from './GameInfoData';
 import { StatPreferences } from './useStatPreferences';
@@ -7,6 +8,7 @@ const database = 'hltb-for-deck';
 export const styleKey = 'hltb-style';
 export const hideDetailsKey = 'hltb-hide-details';
 export const statPreferencesKey = 'hltb-stat-preferences';
+export const appearanceKey = 'hltb-appearance';
 export const apiBootstrapCacheKey = 'hltb-api-bootstrap';
 
 export interface ApiBootstrapSearchAuth {
@@ -162,6 +164,11 @@ export async function getStyle(): Promise<HLTBStyle> {
     return 'default';
 }
 
+export async function getAppearance(): Promise<Appearance> {
+    const appearance = await localforage.getItem<unknown>(appearanceKey);
+    return normalizeAppearance(appearance);
+}
+
 export async function getPreference(): Promise<boolean> {
     const hideViewDetails = await localforage.getItem<boolean>(hideDetailsKey);
     return hideViewDetails === null ? false : hideViewDetails;
@@ -178,6 +185,7 @@ const PREFERENCE_KEYS = [
     styleKey,
     hideDetailsKey,
     statPreferencesKey,
+    appearanceKey,
 ];
 
 export async function clearCache(): Promise<void> {

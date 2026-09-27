@@ -7,19 +7,28 @@ export default (
 }
 
 .hltb-info {
-    background: rgba(14, 20, 27, 0.25);
+    background: var(--hltb-bar-bg, rgb(var(--hltb-bar-rgb, 14 20 27) / var(--hltb-bar-alpha, 0.25)));
     position: relative;
-    border-bottom: 2px solid rgba(61, 68, 80, 0.54);
-    padding-top: 5px;
+    border-bottom: var(--hltb-border-width, 2px) solid var(--hltb-border-color, rgba(61,68,80,.54));
+    padding-top: var(--hltb-pad-y, 5px);
+    color: var(--hltb-text-color, inherit);
+    text-shadow: var(--hltb-text-shadow, none);
+    border-radius: var(--hltb-radius, 0);
+}
+
+/* Keep the "Clean" layouts at 50% opacity unless the user overrides it. */
+.hltb-info-clean-default,
+.hltb-info-clean {
+    --hltb-bar-alpha: 0.5;
 }
 
 .hltb-info-clean-default {
-    background: rgba(14, 20, 27, 0.5);
     position: absolute;
-    border: none;
+    border: 0;
+    border-bottom: var(--hltb-border-width, 0) solid var(--hltb-border-color, rgba(61,68,80,.54));
     padding-top: 0px;
-    top: -40px;
-    height: 40px;
+    top: calc(0px - var(--hltb-bar-height, 40px) * var(--hltb-text-scale, 1));
+    height: calc(var(--hltb-bar-height, 40px) * var(--hltb-text-scale, 1));
     width: 100%;
 }
 
@@ -29,23 +38,23 @@ export default (
 }
 
 .hltb-info-clean {
-    background: rgba(14, 20, 27, 0.5);
     position: absolute;
-    top: -55vh;
-    right: 2.8vw;
+    top: var(--hltb-clean-top, -55vh);
+    right: var(--hltb-clean-inset, 2.8vw);
     width: fit-content;
     height: fit-content;
-    border: none;
+    border: 0;
+    border-bottom: var(--hltb-border-width, 0) solid var(--hltb-border-color, rgba(61,68,80,.54));
 }
 
 .hltb-info-clean-left {
     right: 0px;
-    left: 2.8vw;
+    left: var(--hltb-clean-inset, 2.8vw);
 }
 
 .hltb-info ul {
     list-style: none;
-    padding: 5px 35px;
+    padding: var(--hltb-pad-y, 5px) var(--hltb-pad-x, 35px);
     margin: 0px;
     display: flex;
     flex: 0 1 auto;    
@@ -60,31 +69,27 @@ export default (
     text-align: center;
 }
 
-// .hltb-info-clean ul li {
-//     width: 100%;
-// }
-
 .hltb-info p {
     margin: 0;
 }
 
 .hltb-gametime {
-    font-size: 16px;
+    font-size: calc(var(--hltb-stat-size, 16px) * var(--hltb-text-scale, 1));
     font-weight: bold;
 }
 
 .hltb-info-clean .hltb-gametime {
-    font-size: 20px;
+    font-size: calc(var(--hltb-stat-size, 16px) * var(--hltb-stat-scale-clean, 1.25) * var(--hltb-text-scale, 1));
     font-weight: bold;
 }
 
 .hltb-label {
     text-transform: uppercase;
-    font-size: 10px;
+    font-size: calc(var(--hltb-label-size, 10px) * var(--hltb-text-scale, 1));
 }
 .hltb-details-btn {
     background: transparent !important;
-    color: #1a9fff !important;
+    color: var(--hltb-link-color, #67c1f5) !important;
     margin: auto !important;
     font-size: 10px !important;
     font-weight: bold !important;
@@ -96,10 +101,10 @@ export default (
 }
 
 .hltb-details-btn:focus {
-    color: white !important;
+    color: var(--hltb-link-color-focus, #ffffff) !important;
 }
 .hltb-details-btn:hover {
-    color: white !important;
+    color: var(--hltb-link-color-focus, #ffffff) !important;
 }
 `}
     </style>
