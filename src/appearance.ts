@@ -21,8 +21,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
 export function toStyleVars(appearance: Appearance): CSSProperties {
     const variables: Record<string, string> = {};
     if (appearance.custom) {
-        if (appearance.barAlpha !== DEFAULT_APPEARANCE.barAlpha)
-            variables['--hltb-bar-alpha'] = String(appearance.barAlpha / 100);
+        variables['--hltb-bar-alpha'] = String(appearance.barAlpha / 100);
         // Match the stats text color without changing the hover or focus color.
         if (appearance.linkColor === 'text')
             variables['--hltb-link-color'] = 'currentColor';

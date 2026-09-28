@@ -217,14 +217,16 @@ export const QuickAccessView = () => {
                                 onChange={(v) => update({ textScale: v })}
                             />
                         </PanelSectionRow>
-                        <PanelSectionRow>
-                            <ToggleField
-                                label={lang('bottomBorder')}
-                                description={lang('bottomBorderDesc')}
-                                checked={appearance.border}
-                                onChange={(v) => update({ border: v })}
-                            />
-                        </PanelSectionRow>
+                        {style === 'default' && (
+                            <PanelSectionRow>
+                                <ToggleField
+                                    label={lang('bottomBorder')}
+                                    description={lang('bottomBorderDesc')}
+                                    checked={appearance.border}
+                                    onChange={(v) => update({ border: v })}
+                                />
+                            </PanelSectionRow>
+                        )}
                         <PanelSectionRow>
                             <ButtonItem
                                 layout="below"

@@ -19,7 +19,7 @@ Currently this is an actively maintained fork of [original HLTB for Deck plugin]
 
 ## Appearance
 
-In the Quick Access Menu, turn on **Customize appearance** to change the bar's opacity, link color, text size, shadow, and border. Your choices apply to every layout. Turn it off to use the original appearance without losing your choices.
+In the Quick Access Menu, turn on **Customize appearance** to change the bar's opacity, link color, text size, shadow, and border. Turn it off to use the original appearance without losing your choices. The bottom border option is available only for the Default layout.
 
 CSS Loader themes can override the bar using properties such as `--hltb-bar-alpha` and `--hltb-link-color`. Add `!important` to override a choice made in the menu.
 
