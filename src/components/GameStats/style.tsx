@@ -11,6 +11,7 @@ export default (
     position: relative;
     border-bottom: var(--hltb-border-width, 2px) solid var(--hltb-border-color, rgba(61,68,80,.54));
     padding-top: var(--hltb-pad-y, 5px);
+    padding-bottom: var(--hltb-pad-y, 5px);
     color: var(--hltb-text-color, inherit);
     text-shadow: var(--hltb-text-shadow, none);
     border-radius: var(--hltb-radius, 0);
@@ -27,6 +28,7 @@ export default (
     border: 0;
     border-bottom: var(--hltb-border-width, 0) solid var(--hltb-border-color, rgba(61,68,80,.54));
     padding-top: 0px;
+    padding-bottom: 0px;
     top: calc(0px - var(--hltb-bar-height, 40px) * var(--hltb-text-scale, 1));
     height: calc(var(--hltb-bar-height, 40px) * var(--hltb-text-scale, 1));
     width: 100%;
