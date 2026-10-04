@@ -10,6 +10,8 @@ import style from './style';
 import { useEffect, useRef, useState } from 'react';
 import { useStatPreferences } from '../../hooks/useStatPreferences';
 import useLocalization from '../../hooks/useLocalization';
+import { hydrateAppearance, toStyleVars } from '../../appearance';
+import { useAppearance } from '../../hooks/useAppearance';
 
 interface GameStatsProps {
     game: string;
@@ -52,6 +54,7 @@ export const GameStats = ({ game, appId, id, isSteamGame }: GameStatsProps) => {
     // or just newly opening the page), therefore it's not "launching" by default.
     const [gameLaunching, setGameLaunching] = useState<boolean>(false);
     const ref = useRef<HTMLDivElement | null>(null);
+    const { appearance } = useAppearance();
     useEffect(() => {
         const topCapsule = findTopCapsuleParent(ref?.current);
         if (!topCapsule) {
@@ -101,6 +104,8 @@ export const GameStats = ({ game, appId, id, isSteamGame }: GameStatsProps) => {
         };
     }, []);
 
+    useEffect(() => void hydrateAppearance(), []);
+
     const lang = useLocalization();
     const {
         mainStat,
@@ -145,6 +150,7 @@ export const GameStats = ({ game, appId, id, isSteamGame }: GameStatsProps) => {
             {style}
             <div
                 className={`${baseClass} ${hltbInfoStyle} ${hltbInfoPosition}`}
+                style={toStyleVars(appearance)}
             >
                 <ul
                     style={{

@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
-import { getPreference, getStyle } from './Cache';
+import {
+    getPreference,
+    getStyle,
+    hideDetailsKey,
+    styleKey,
+    subscribeCache,
+} from './Cache';
 
 export type HLTBStyle =
     | 'default'
@@ -11,10 +17,17 @@ export type HLTBStyle =
 export const useStyle = () => {
     const [style, setStyle] = useState<HLTBStyle>(null);
     useEffect(() => {
-        const getData = async () => {
-            setStyle(await getStyle());
+        let mounted = true;
+        const read = async () => {
+            const next = await getStyle();
+            if (mounted) setStyle(next);
         };
-        getData();
+        read();
+        const unsubscribe = subscribeCache(styleKey, read);
+        return () => {
+            mounted = false;
+            unsubscribe();
+        };
     }, []);
 
     return style;
@@ -23,10 +36,17 @@ export const useStyle = () => {
 export const usePreference = () => {
     const [pref, setPref] = useState<boolean>(false);
     useEffect(() => {
-        const getData = async () => {
-            setPref(await getPreference());
+        let mounted = true;
+        const read = async () => {
+            const next = await getPreference();
+            if (mounted) setPref(next);
         };
-        getData();
+        read();
+        const unsubscribe = subscribeCache(hideDetailsKey, read);
+        return () => {
+            mounted = false;
+            unsubscribe();
+        };
     }, []);
 
     return pref;

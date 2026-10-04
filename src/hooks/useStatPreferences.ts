@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { getStatPreferences } from './Cache';
+import {
+    getStatPreferences,
+    statPreferencesKey,
+    subscribeCache,
+} from './Cache';
 
 export type StatPreferences = {
     showMain: boolean;
@@ -15,12 +19,17 @@ export const useStatPreferences = () => {
         showAllStyles: true,
     });
     useEffect(() => {
-        const getData = async () => {
-            let prefs = await getStatPreferences();
-            if (prefs === null) prefs = statPrefs;
-            setStatPrefs(prefs);
+        let mounted = true;
+        const read = async () => {
+            const prefs = await getStatPreferences();
+            if (mounted && prefs !== null) setStatPrefs(prefs);
         };
-        getData();
+        read();
+        const unsubscribe = subscribeCache(statPreferencesKey, read);
+        return () => {
+            mounted = false;
+            unsubscribe();
+        };
     }, []);
 
     return statPrefs;

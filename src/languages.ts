@@ -27,7 +27,9 @@ import vi from './localizations/vi.json';
 import zhCn from './localizations/zh-cn.json';
 import zhTw from './localizations/zh-tw.json';
 
-const languages = {
+type Catalog = Partial<Record<keyof typeof en, string>>;
+
+const catalogs = {
     bg,
     cs,
     da,
@@ -57,5 +59,10 @@ const languages = {
     zhCn,
     zhTw,
 } as const;
+
+// English defines all keys; missing translations fall back to English.
+const languages = catalogs as Record<keyof typeof catalogs, Catalog> & {
+    en: typeof en;
+};
 
 export default languages;
