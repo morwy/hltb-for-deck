@@ -15,6 +15,15 @@ Currently this is an actively maintained fork of [original HLTB for Deck plugin]
 - On an app page, shows four main stats offered by How Long to Beat
 - Clicking **View Details** will take you to their site for the game
 - Results are cached for two hours (cache can be cleared from QAM page for HLTB for Deck)
+- Change the bar's appearance from the Quick Access Menu
+
+## Appearance
+
+In the Quick Access Menu, turn on **Customize appearance** to change the bar's opacity, link color, text size, shadow, and border. Turn it off to use the original appearance without losing your choices. The bottom border option is available only for the Default layout.
+
+CSS Loader themes can override the bar using properties such as `--hltb-bar-alpha` and `--hltb-link-color`. Add `!important` to override a choice made in the menu.
+
+**Clear Cache** removes cached game results, not your settings.
 
 ## Screenshots
 
