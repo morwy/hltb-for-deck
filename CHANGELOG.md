@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.0.12] - 2026-10-04
+
+### 🚀 Features
+
+- Add appearance controls and auto-refresh to HLTB bar (#70) by @beallio
+
+### 🐛 Bug Fixes
+
+- Game search after HLTB API update (#68) by @beallio
+
 ## [2.0.11] - 2026-09-16
 
 ### 🐛 Bug Fixes
