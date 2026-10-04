@@ -22,8 +22,8 @@ const DEFAULT_SEARCH_URL = '/api/search/site';
 
 interface SearchAuth {
     token: string;
-    hpKey: string;
-    hpVal: string;
+    hpKey?: string;
+    hpVal?: string;
 }
 
 interface SearchResultsState {
@@ -45,13 +45,18 @@ function getBaseHeaders() {
 }
 
 function getSearchHeaders(auth: SearchAuth) {
-    return {
+    const headers: Record<string, string> = {
         ...getBaseHeaders(),
         Authority: 'howlongtobeat.com',
         'x-auth-token': auth.token,
-        'x-hp-key': auth.hpKey,
-        'x-hp-val': auth.hpVal,
     };
+
+    if (auth.hpKey && auth.hpVal) {
+        headers['x-hp-key'] = auth.hpKey;
+        headers['x-hp-val'] = auth.hpVal;
+    }
+
+    return headers;
 }
 
 function parseSearchAuth(data: unknown): SearchAuth | null {
@@ -79,13 +84,15 @@ function parseSearchAuth(data: unknown): SearchAuth | null {
         }
     }
 
-    if (token && hpKey && hpVal) {
+    if (token) {
+        const auth: SearchAuth = { token };
+        if (hpKey && hpVal) {
+            auth.hpKey = hpKey;
+            auth.hpVal = hpVal;
+        }
+
         console.log('HLTB auth acquired');
-        return {
-            token,
-            hpKey,
-            hpVal,
-        };
+        return auth;
     }
 
     console.error('HLTB - incomplete auth response:', data);
@@ -461,7 +468,7 @@ async function fetchWithSearchAuth(
 }
 
 async function fetchSearchResultsWithAuth(gameName: string, auth: SearchAuth) {
-    const data = {
+    const data: Record<string, unknown> = {
         searchType: 'games',
         searchTerms: gameName.split(' '),
         searchPage: 1,
@@ -486,8 +493,11 @@ async function fetchSearchResultsWithAuth(gameName: string, auth: SearchAuth) {
             sort: 0,
             randomizer: 0,
         },
-        [auth.hpKey]: auth.hpVal,
     };
+
+    if (auth.hpKey && auth.hpVal) {
+        data[auth.hpKey] = auth.hpVal;
+    }
 
     return fetchNoCors(`https://howlongtobeat.com${searchUrl}`, {
         method: 'POST',

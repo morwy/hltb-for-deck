@@ -6,7 +6,8 @@
     "scripts": {
         "build": "rollup -c",
         "prepare": "husky install",
-        "test": "jest"
+        "test": "jest",
+        "check:hltb": "jest --runInBand --testMatch '**/checks/hltb.live.ts'"
     },
     "author": "contributors and morwy",
     "license": "MIT",
@@ -27,7 +28,8 @@
         "typescript": "^5.9.3",
         "jest": "^29.7.0",
         "ts-jest": "^29.4.5",
-        "@types/jest": "^29.5.14"
+        "@types/jest": "^29.5.14",
+        "linkedom": "0.18.12"
     },
     "dependencies": {
         "@decky/api": "^1.1.3",

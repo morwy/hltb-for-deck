@@ -1,0 +1,31 @@
+name: HLTB API check
+
+on:
+    pull_request:
+        types: [opened, synchronize]
+
+permissions:
+    contents: read
+
+jobs:
+    hltb-api:
+        name: Check live HLTB lookup
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
+
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: '22.13'
+
+            - name: Install pnpm
+              run: npm install -g pnpm@9.15.9
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile --ignore-scripts
+
+            - name: Check live HLTB lookup
+              run: pnpm run check:hltb
