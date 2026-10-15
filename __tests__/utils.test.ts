@@ -4,6 +4,9 @@ describe('Other functions', () => {
     test('normalize() should make string lowercase', () => {
         expect(normalize('Far Cry')).toBe('far cry');
         expect(normalize('Café International')).toBe('café international');
+        expect(normalize('Cafe\u0301 International')).toBe(
+            'café international'
+        );
     });
     test('normalize() should trim the string', () => {
         expect(normalize('  Far Cry ')).toBe('far cry');
