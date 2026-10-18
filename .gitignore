@@ -117,3 +117,7 @@ cli/
 
 # Output plugin directory
 out/
+
+# Python
+__pycache__/
+*.pyc
