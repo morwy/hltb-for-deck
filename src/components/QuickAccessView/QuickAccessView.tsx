@@ -20,6 +20,7 @@ import { useStatPreferences } from '../../hooks/useStatPreferences';
 import useLocalization from '../../hooks/useLocalization';
 import { DEFAULT_APPEARANCE, hydrateAppearance } from '../../appearance';
 import { useAppearance } from '../../hooks/useAppearance';
+import { UpdatesSection } from '../Updates';
 
 export const QuickAccessView = () => {
     const { appearance, update } = useAppearance();
@@ -71,8 +72,10 @@ export const QuickAccessView = () => {
         preferences.showAllStyles = !preferences.showAllStyles;
         updateCache(statPreferencesKey, preferences);
     };
+
     return (
         <>
+            <UpdatesSection />
             <PanelSection>
                 <PanelSectionRow>
                     <DropdownItem
