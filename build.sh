@@ -24,7 +24,7 @@ if [ -f hltb-for-deck.tar.gz ]; then
 fi
 
 echo "Installing dependencies."
-npm install -g pnpm
+which pnpm >/dev/null 2>&1 || npm install -g pnpm
 pnpm install
 
 echo "Running build script."
