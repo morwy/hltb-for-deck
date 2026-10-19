@@ -33,6 +33,7 @@ pnpm run build
 echo "Preparing distribution package contents."
 cp -f "plugin.json" "./dist/"
 cp -f "package.json" "./dist/"
+cp -f "main.py" "./dist/"
 mkdir -p ./dist/dist
 rm -f "./dist/index.js.map"
 mv ./dist/index.js ./dist/dist/

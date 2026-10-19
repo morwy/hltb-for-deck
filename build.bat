@@ -32,6 +32,7 @@ cmd /c pnpm run build
 echo Preparing distribution package contents.
 copy /Y "plugin.json" ".\\dist\\"
 copy /Y "package.json" ".\\dist\\"
+copy /Y "main.py" ".\\dist\\"
 mkdir .\\dist\\dist
 del /f /q ".\\dist\\index.js.map"
 move .\\dist\\index.js .\\dist\\dist\\
