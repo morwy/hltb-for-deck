@@ -24,13 +24,15 @@ export default (
 }
 
 .hltb-info-clean-default {
+    /* Keep room for Steam's button when the stats text is reduced. */
+    --hltb-clean-default-height: max(40px, calc(var(--hltb-bar-height, 40px) * var(--hltb-text-scale, 1)));
     position: absolute;
     border: 0;
     border-bottom: var(--hltb-border-width, 0) solid var(--hltb-border-color, rgba(61,68,80,.54));
     padding-top: 0px;
     padding-bottom: 0px;
-    top: calc(0px - var(--hltb-bar-height, 40px) * var(--hltb-text-scale, 1));
-    height: calc(var(--hltb-bar-height, 40px) * var(--hltb-text-scale, 1));
+    top: calc(0px - var(--hltb-clean-default-height));
+    height: var(--hltb-clean-default-height);
     width: 100%;
 }
 
@@ -89,24 +91,16 @@ export default (
     text-transform: uppercase;
     font-size: calc(var(--hltb-label-size, 10px) * var(--hltb-text-scale, 1));
 }
-.hltb-details-btn {
-    background: transparent !important;
-    color: var(--hltb-link-color, #67c1f5) !important;
-    margin: auto !important;
-    font-size: 10px !important;
-    font-weight: bold !important;
-    text-transform: uppercase;
-    line-height: 10px !important;
-}
-.hltb-details-btn-clean {
-    margin: auto !important;
+.hltb-details-item {
+    align-self: center;
 }
 
-.hltb-details-btn:focus {
-    color: var(--hltb-link-color-focus, #ffffff) !important;
-}
-.hltb-details-btn:hover {
-    color: var(--hltb-link-color-focus, #ffffff) !important;
+.hltb-info .hltb-details-container {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    gap: 0;
+    justify-content: center;
 }
 `}
     </style>
