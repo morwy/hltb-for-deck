@@ -5,8 +5,8 @@
     "cleanDefault": "\"Clean\" Padrão",
     "hltbStyle": "Estilo HLTB",
     "cleanDesc": "Os estilos \"Clean\" são foram feitos para funcionar com o tema \"Clean Gameview\" do CSS Loader",
-    "hideViewDetails": "Ocultar \"Ver Detalhes\"",
-    "hideViewDetailsDesc": "Oculta o botão \"Ver Detalhes\" sobre os atributos do HLTB",
+    "hideViewDetails": "Ocultar \"Detalhes\"",
+    "hideViewDetailsDesc": "Oculta o botão \"Detalhes\" sobre os atributos do HLTB",
     "toggleMainStat": "Ajusta o atributo história principal",
     "toggleMainStatDesc": "Exibe/Oculta apenas o atributo história principal",
     "toggleMainPlusStat": "Ajusta o atributo história principal+",
@@ -21,6 +21,6 @@
     "mainPlusExtras": "Principal + Extras",
     "completionist": "Completista",
     "allStyles": "Todas Modalidades",
-    "viewDetails": "Ver Detalhes",
+    "viewDetails": "Detalhes",
     "showHideStats": "Exibir/Ocultar Atributos HLTB"
 }

@@ -5,8 +5,8 @@
     "cleanDefault": "\"Clean\" По умолчанию",
     "hltbStyle": "Стиль HLTB",
     "cleanDesc": "Стили \"Clean\" предназначены для темы CSS Loader \"Clean Gameview\"",
-    "hideViewDetails": "Скрыть \"Подробнее\"",
-    "hideViewDetailsDesc": "Скрывает кнопку \"Подробнее\" в статистике HLTB",
+    "hideViewDetails": "Скрыть \"Подробности\"",
+    "hideViewDetailsDesc": "Скрывает кнопку \"Подробности\" в статистике HLTB",
     "toggleMainStat": "Показать/скрыть \"Основной сюжет\"",
     "toggleMainStatDesc": "Показывает или скрывает \"Основной сюжет\" статистику",
     "toggleMainPlusStat": "Показать/скрыть \"Сюжет + доп. задания\"",
@@ -21,6 +21,6 @@
     "mainPlusExtras": "Сюжет + доп. задания",
     "completionist": "Полное прохождение",
     "allStyles": "Все стили",
-    "viewDetails": "Подробнее",
+    "viewDetails": "Подробности",
     "showHideStats": "Показать/скрыть статистику HLTB"
 }
