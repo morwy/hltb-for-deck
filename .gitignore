@@ -117,3 +117,6 @@ cli/
 
 # Output plugin directory
 out/
+
+# tmp
+tmp
