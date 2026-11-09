@@ -103,6 +103,9 @@ export default (
 }
 .hltb-details-own-line {
     flex-basis: 100%;
+    /* Twice --hltb-pad-y: .hltb-info and its list each pad the stats by that
+       much. The gap above the divider matches the one above the stats, and the
+       button sits centered between the divider and the bottom of the bar. */
     margin-top: calc(var(--hltb-pad-y, 5px) * 2);
     padding-top: calc(var(--hltb-pad-y, 5px) * 2);
     border-top: 1px solid var(--hltb-border-color, rgba(61,68,80,.54));
