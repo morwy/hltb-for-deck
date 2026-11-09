@@ -119,6 +119,12 @@ export const GameStats = ({ game, appId, id, isSteamGame }: GameStatsProps) => {
         useStatPreferences();
     const hltbStyle = useStyle();
     const hideDetails = usePreference();
+    // Part of "Customize appearance", so it only applies while that's on.
+    // Only the default bar can grow a second row; clean-default has a fixed height.
+    const detailsOwnLine =
+        appearance.custom &&
+        appearance.detailsOwnLine &&
+        hltbStyle === 'default';
     const baseClass = hltbStyle === null ? 'hltb-info-absolute' : 'hltb-info';
     // Hide if there are no stats, show stats is false, all stats are hidden, or the game is launching
     const hide =
@@ -155,6 +161,7 @@ export const GameStats = ({ game, appId, id, isSteamGame }: GameStatsProps) => {
                 <ul
                     style={{
                         display: 'flex',
+                        flexWrap: detailsOwnLine ? 'wrap' : undefined,
                         justifyContent: 'space-evenly',
                     }}
                 >
@@ -195,7 +202,11 @@ export const GameStats = ({ game, appId, id, isSteamGame }: GameStatsProps) => {
                         <p className="hltb-label">{lang('allStyles')}</p>
                     </li>
                     {gameId && !hideDetails && (
-                        <li>
+                        <li
+                            className={
+                                detailsOwnLine ? 'hltb-details-own-line' : ''
+                            }
+                        >
                             <DialogButtonPrimary
                                 className={`hltb-details-btn ${btnStyle}`}
                                 onClick={() =>

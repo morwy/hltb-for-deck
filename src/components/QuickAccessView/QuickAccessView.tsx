@@ -195,6 +195,18 @@ export const QuickAccessView = () => {
                                 }
                             />
                         </PanelSectionRow>
+                        {style === 'default' && !hideDetails && (
+                            <PanelSectionRow>
+                                <ToggleField
+                                    label={lang('detailsOwnLine')}
+                                    description={lang('detailsOwnLineDesc')}
+                                    checked={appearance.detailsOwnLine}
+                                    onChange={(v) =>
+                                        update({ detailsOwnLine: v })
+                                    }
+                                />
+                            </PanelSectionRow>
+                        )}
                         <PanelSectionRow>
                             <ToggleField
                                 label={lang('textShadow')}

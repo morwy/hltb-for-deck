@@ -7,6 +7,7 @@ export interface Appearance {
     textShadow: boolean;
     textScale: number;
     border: boolean;
+    detailsOwnLine: boolean;
 }
 
 export const DEFAULT_APPEARANCE: Appearance = {
@@ -16,6 +17,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
     textShadow: false,
     textScale: 100,
     border: true,
+    detailsOwnLine: false,
 };
 
 export function toStyleVars(appearance: Appearance): CSSProperties {
@@ -66,6 +68,10 @@ export function normalizeAppearance(value: unknown): Appearance {
         typeof stored.border === 'boolean'
             ? stored.border
             : DEFAULT_APPEARANCE.border;
+    const detailsOwnLine =
+        typeof stored.detailsOwnLine === 'boolean'
+            ? stored.detailsOwnLine
+            : DEFAULT_APPEARANCE.detailsOwnLine;
 
     return {
         custom,
@@ -74,6 +80,7 @@ export function normalizeAppearance(value: unknown): Appearance {
         textShadow,
         textScale,
         border,
+        detailsOwnLine,
     };
 }
 

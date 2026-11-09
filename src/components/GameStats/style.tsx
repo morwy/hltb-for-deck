@@ -101,6 +101,17 @@ export default (
 .hltb-details-btn-clean {
     margin: auto !important;
 }
+.hltb-details-own-line {
+    flex-basis: 100%;
+    margin-top: calc(var(--hltb-pad-y, 5px) * 2);
+    padding-top: calc(var(--hltb-pad-y, 5px) * 2);
+    border-top: 1px solid var(--hltb-border-color, rgba(61,68,80,.54));
+}
+.hltb-details-own-line .hltb-details-btn {
+    width: auto !important;
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+}
 
 .hltb-details-btn:focus {
     color: var(--hltb-link-color-focus, #ffffff) !important;

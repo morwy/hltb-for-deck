@@ -23,6 +23,8 @@
     "resetAppearance": "Reset appearance",
     "hideViewDetails": "Hide \"View Details\"",
     "hideViewDetailsDesc": "Hides \"View Details\" button on HLTB Stats",
+    "detailsOwnLine": "\"View Details\" on its own line",
+    "detailsOwnLineDesc": "Centers the \"View Details\" button below the stats",
     "toggleMainStat": "Toggle main stat",
     "toggleMainStatDesc": "Shows/Hides just the main stat",
     "toggleMainPlusStat": "Toggle main+ stat",
