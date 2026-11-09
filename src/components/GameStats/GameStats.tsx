@@ -21,7 +21,7 @@ interface GameStatsProps {
     isSteamGame: boolean;
 }
 
-const detailsClasses =
+const detailsButtonClasses =
     findClassModule((classes) => classes.DeckVerifiedInfo && classes.Details) ??
     {};
 
@@ -198,15 +198,14 @@ export const GameStats = ({ game, appId, id, isSteamGame }: GameStatsProps) => {
                         <li className="hltb-details-item">
                             <Focusable
                                 className={`${
-                                    detailsClasses.DeckVerifiedInfo ?? ''
+                                    detailsButtonClasses.DeckVerifiedInfo ?? ''
                                 } hltb-details-container`}
-                                focusClassName={detailsClasses.Focused}
+                                focusClassName={detailsButtonClasses.Focused}
                             >
                                 <Focusable
                                     className={`${
-                                        detailsClasses.Details ?? ''
+                                        detailsButtonClasses.Details ?? ''
                                     } hltb-details-btn`}
-                                    noFocusRing={false}
                                     onActivate={() =>
                                         Navigation.NavigateToExternalWeb(
                                             `https://howlongtobeat.com/game/${gameId}`
