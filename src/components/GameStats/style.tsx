@@ -17,12 +17,6 @@ export default (
     border-radius: var(--hltb-radius, 0);
 }
 
-/* Keep the "Clean" layouts at 50% opacity unless the user overrides it. */
-.hltb-info-clean-default,
-.hltb-info-clean {
-    --hltb-bar-alpha: 0.5;
-}
-
 .hltb-info-clean-default {
     /* Keep room for Steam's button when the stats text is reduced. */
     --hltb-clean-default-height: max(47px, calc(var(--hltb-bar-height, 47px) * var(--hltb-text-scale, 1)));
@@ -47,6 +41,8 @@ export default (
     right: var(--hltb-clean-inset, 2.8vw);
     width: fit-content;
     height: fit-content;
+    padding-top: 0;
+    padding-bottom: 0;
     border: 0;
     border-bottom: var(--hltb-border-width, 0) solid var(--hltb-border-color, rgba(61,68,80,.54));
 }
@@ -64,7 +60,14 @@ export default (
     flex: 0 1 auto;    
 }
 
+.hltb-info-clean-default ul,
 .hltb-info-clean ul {
+    background: rgba(14, 20, 27, .33);
+    border-radius: inherit;
+}
+
+.hltb-info-clean ul {
+    background: rgba(14, 20, 27, var(--hltb-content-alpha, .33));
     display: block;
     flex-direction: column;
     gap: 10px;

@@ -10,7 +10,7 @@ export interface Appearance {
 
 export const DEFAULT_APPEARANCE: Appearance = {
     custom: false,
-    barAlpha: 25,
+    barAlpha: 33,
     textShadow: false,
     textScale: 100,
     border: true,
@@ -19,7 +19,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
 export function toStyleVars(appearance: Appearance): CSSProperties {
     const variables: Record<string, string> = {};
     if (appearance.custom) {
-        variables['--hltb-bar-alpha'] = String(appearance.barAlpha / 100);
+        variables['--hltb-content-alpha'] = String(appearance.barAlpha / 100);
         if (appearance.textShadow)
             variables['--hltb-text-shadow'] = '0 1px 3px rgba(0, 0, 0, 0.9)';
         if (appearance.textScale !== DEFAULT_APPEARANCE.textScale)
@@ -42,7 +42,7 @@ export function normalizeAppearance(value: unknown): Appearance {
             : DEFAULT_APPEARANCE.custom;
     const barAlpha =
         typeof stored.barAlpha === 'number' && Number.isFinite(stored.barAlpha)
-            ? Math.round(Math.min(100, Math.max(0, stored.barAlpha)) / 5) * 5
+            ? Math.round(Math.min(100, Math.max(0, stored.barAlpha)))
             : DEFAULT_APPEARANCE.barAlpha;
     const textShadow =
         typeof stored.textShadow === 'boolean'

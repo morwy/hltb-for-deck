@@ -156,20 +156,22 @@ export const QuickAccessView = () => {
                 </PanelSectionRow>
                 {appearance.custom && (
                     <>
-                        <PanelSectionRow>
-                            <SliderField
-                                label={lang('barOpacity')}
-                                description={lang('barOpacityDesc')}
-                                value={appearance.barAlpha}
-                                min={0}
-                                max={100}
-                                step={5}
-                                showValue
-                                valueSuffix="%"
-                                resetValue={DEFAULT_APPEARANCE.barAlpha}
-                                onChange={(v) => update({ barAlpha: v })}
-                            />
-                        </PanelSectionRow>
+                        {(style === 'clean' || style === 'clean-left') && (
+                            <PanelSectionRow>
+                                <SliderField
+                                    label={lang('barOpacity')}
+                                    description={lang('barOpacityDesc')}
+                                    value={appearance.barAlpha}
+                                    min={0}
+                                    max={100}
+                                    step={1}
+                                    showValue
+                                    valueSuffix="%"
+                                    resetValue={DEFAULT_APPEARANCE.barAlpha}
+                                    onChange={(v) => update({ barAlpha: v })}
+                                />
+                            </PanelSectionRow>
+                        )}
                         <PanelSectionRow>
                             <ToggleField
                                 label={lang('textShadow')}
