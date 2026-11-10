@@ -67,6 +67,7 @@ export default (
 .hltb-info-clean ul {
     display: block;
     flex-direction: column;
+    gap: 10px;
 }
 
 .hltb-info ul li {
@@ -79,11 +80,6 @@ export default (
 
 .hltb-gametime {
     font-size: calc(var(--hltb-stat-size, 16px) * var(--hltb-text-scale, 1));
-    font-weight: bold;
-}
-
-.hltb-info-clean .hltb-gametime {
-    font-size: calc(var(--hltb-stat-size, 16px) * var(--hltb-stat-scale-clean, 1.25) * var(--hltb-text-scale, 1));
     font-weight: bold;
 }
 
