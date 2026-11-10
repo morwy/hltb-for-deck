@@ -3,7 +3,6 @@ import type { CSSProperties } from 'react';
 export interface Appearance {
     custom: boolean;
     barAlpha: number;
-    linkColor: 'steam' | 'text';
     textShadow: boolean;
     textScale: number;
     border: boolean;
@@ -12,7 +11,6 @@ export interface Appearance {
 export const DEFAULT_APPEARANCE: Appearance = {
     custom: false,
     barAlpha: 25,
-    linkColor: 'steam',
     textShadow: false,
     textScale: 100,
     border: true,
@@ -22,9 +20,6 @@ export function toStyleVars(appearance: Appearance): CSSProperties {
     const variables: Record<string, string> = {};
     if (appearance.custom) {
         variables['--hltb-bar-alpha'] = String(appearance.barAlpha / 100);
-        // Match the stats text color without changing the hover or focus color.
-        if (appearance.linkColor === 'text')
-            variables['--hltb-link-color'] = 'currentColor';
         if (appearance.textShadow)
             variables['--hltb-text-shadow'] = '0 1px 3px rgba(0, 0, 0, 0.9)';
         if (appearance.textScale !== DEFAULT_APPEARANCE.textScale)
@@ -49,10 +44,6 @@ export function normalizeAppearance(value: unknown): Appearance {
         typeof stored.barAlpha === 'number' && Number.isFinite(stored.barAlpha)
             ? Math.round(Math.min(100, Math.max(0, stored.barAlpha)) / 5) * 5
             : DEFAULT_APPEARANCE.barAlpha;
-    const linkColor =
-        stored.linkColor === 'steam' || stored.linkColor === 'text'
-            ? stored.linkColor
-            : DEFAULT_APPEARANCE.linkColor;
     const textShadow =
         typeof stored.textShadow === 'boolean'
             ? stored.textShadow
@@ -70,7 +61,6 @@ export function normalizeAppearance(value: unknown): Appearance {
     return {
         custom,
         barAlpha,
-        linkColor,
         textShadow,
         textScale,
         border,

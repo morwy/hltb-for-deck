@@ -171,31 +171,6 @@ export const QuickAccessView = () => {
                             />
                         </PanelSectionRow>
                         <PanelSectionRow>
-                            <DropdownItem
-                                label={lang('viewDetailsColor')}
-                                description={lang('viewDetailsColorDesc')}
-                                menuLabel={lang('viewDetailsColor')}
-                                rgOptions={[
-                                    { data: 0, label: lang('linkColorSteam') },
-                                    { data: 1, label: lang('linkColorText') },
-                                ]}
-                                selectedOption={
-                                    appearance.linkColor === 'steam' ? 0 : 1
-                                }
-                                onChange={(newVal: {
-                                    data: number;
-                                    label: string;
-                                }) =>
-                                    update({
-                                        linkColor:
-                                            newVal.data === 0
-                                                ? 'steam'
-                                                : 'text',
-                                    })
-                                }
-                            />
-                        </PanelSectionRow>
-                        <PanelSectionRow>
                             <ToggleField
                                 label={lang('textShadow')}
                                 description={lang('textShadowDesc')}
