@@ -37,8 +37,8 @@ importers:
         specifier: ^1.0.2
         version: 1.0.2
       '@decky/ui':
-        specifier: ^4.12.1
-        version: 4.12.1
+        specifier: ^4.16.5
+        version: 4.16.5
       '@types/fast-levenshtein':
         specifier: ^0.0.2
         version: 0.0.2
@@ -325,8 +325,8 @@ packages:
   '@decky/rollup@1.0.2':
     resolution: {integrity: sha512-ixuHH3msw156ACbgWZi4hgccdzDBIuqYGOVja8sLX4lHFgaWUKji1vomDi7Dk1CamgjmKt+Dqf75Pezv2FB6Bw==}
 
-  '@decky/ui@4.12.1':
-    resolution: {integrity: sha512-kJOZ+PRJK15jR0N9/5s3NrMUjjgQSQ+UT4Fb+p18cdh08Ujzi617+0FJZc/x9RPIWj8s7aqkx3WvKa7YWUm72g==}
+  '@decky/ui@4.16.5':
+    resolution: {integrity: sha512-3vefJUGf5eXW27H+TyU2seWQzJZB/I3/PJUNG6LfwNdvbjv6jCSAXkK+4A3ICT4c2BWjCVe+tZZf7JUq+ZDcfw==}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -2675,7 +2675,7 @@ snapshots:
       tslib: 2.8.1
       typescript: 5.9.3
 
-  '@decky/ui@4.12.1': {}
+  '@decky/ui@4.16.5': {}
 
   '@isaacs/cliui@8.0.2':
     dependencies:

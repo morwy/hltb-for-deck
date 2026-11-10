@@ -5,8 +5,8 @@
     "cleanDefault": "\"Sade\" Varsayılan",
     "hltbStyle": "HLTB Stili",
     "cleanDesc": "\"Sade\" stilleri \"Clean Gameview\" CSS Loader temasıyla çalışmak üzere tasarlanmıştır",
-    "hideViewDetails": "\"Detayları Göster\"i gizle",
-    "hideViewDetailsDesc": "HLTB istatistiklerindeki \"Detayları Göster\" butonunu gizler",
+    "hideViewDetails": "\"Detaylar\" düğmesini gizle",
+    "hideViewDetailsDesc": "HLTB istatistiklerindeki \"Detaylar\" butonunu gizler",
     "toggleMainStat": "Ana istatistiği değiştir",
     "toggleMainStatDesc": "Sadece ana istatistiği gösterir/gizler",
     "toggleMainPlusStat": "Ana+ istatistiği değiştir",
@@ -21,6 +21,6 @@
     "mainPlusExtras": "Ana + Ekstralar",
     "completionist": "Tamamlayıcı",
     "allStyles": "Tüm stiller",
-    "viewDetails": "Detayları Göster",
+    "viewDetails": "Detaylar",
     "showHideStats": "HLTB İstatistiklerini Göster/Gizle"
 }

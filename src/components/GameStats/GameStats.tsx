@@ -1,7 +1,8 @@
 import {
     appDetailsClasses,
     appDetailsHeaderClasses,
-    DialogButtonPrimary,
+    findClassModule,
+    Focusable,
     Navigation,
 } from '@decky/ui';
 import useHltb from '../../hooks/useHltb';
@@ -19,6 +20,10 @@ interface GameStatsProps {
     id: string;
     isSteamGame: boolean;
 }
+
+const detailsButtonClasses =
+    findClassModule((classes) => classes.DeckVerifiedInfo && classes.Details) ??
+    {};
 
 function findTopCapsuleParent(ref: HTMLDivElement | null): Element | null {
     const children = ref?.parentElement?.children;
@@ -140,11 +145,6 @@ export const GameStats = ({ game, appId, id, isSteamGame }: GameStatsProps) => {
     }
     const hltbInfoPosition =
         hltbStyle === 'clean-left' ? 'hltb-info-clean-left' : '';
-    const btnStyle =
-        hltbStyle === 'default' || hltbStyle === 'clean-default'
-            ? ''
-            : 'hltb-details-btn-clean';
-
     return (
         <div id={id} ref={ref} style={{ display: hide ? 'none' : 'block' }}>
             {style}
@@ -195,17 +195,26 @@ export const GameStats = ({ game, appId, id, isSteamGame }: GameStatsProps) => {
                         <p className="hltb-label">{lang('allStyles')}</p>
                     </li>
                     {gameId && !hideDetails && (
-                        <li>
-                            <DialogButtonPrimary
-                                className={`hltb-details-btn ${btnStyle}`}
-                                onClick={() =>
-                                    Navigation.NavigateToExternalWeb(
-                                        `https://howlongtobeat.com/game/${gameId}`
-                                    )
-                                }
+                        <li className="hltb-details-item">
+                            <Focusable
+                                className={`${
+                                    detailsButtonClasses.DeckVerifiedInfo ?? ''
+                                } hltb-details-container`}
+                                focusClassName={detailsButtonClasses.Focused}
                             >
-                                {lang('viewDetails')}
-                            </DialogButtonPrimary>
+                                <Focusable
+                                    className={`${
+                                        detailsButtonClasses.Details ?? ''
+                                    } hltb-details-btn`}
+                                    onActivate={() =>
+                                        Navigation.NavigateToExternalWeb(
+                                            `https://howlongtobeat.com/game/${gameId}`
+                                        )
+                                    }
+                                >
+                                    {lang('viewDetails')}
+                                </Focusable>
+                            </Focusable>
                         </li>
                     )}
                 </ul>
