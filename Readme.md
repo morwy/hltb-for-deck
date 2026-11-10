@@ -1,5 +1,7 @@
 # HLTB for Deck
 
+![Title image](images/image001.jpg)
+
 ## Description
 
 A plugin to show you game lengths according to How Long To Beat. Built with [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader).
@@ -24,10 +26,6 @@ In the Quick Access Menu, turn on **Customize appearance** to change the bar's o
 CSS Loader themes can override the bar using properties such as `--hltb-bar-alpha` and `--hltb-text-scale`. Add `!important` to override a choice made in the menu.
 
 **Clear Cache** removes cached game results, not your settings.
-
-## Screenshots
-
-![Title image](images/image001.jpg)
 
 ## Manual installation in Decky
 
