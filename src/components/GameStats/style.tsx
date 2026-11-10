@@ -25,7 +25,7 @@ export default (
 
 .hltb-info-clean-default {
     /* Keep room for Steam's button when the stats text is reduced. */
-    --hltb-clean-default-height: max(40px, calc(var(--hltb-bar-height, 40px) * var(--hltb-text-scale, 1)));
+    --hltb-clean-default-height: max(47px, calc(var(--hltb-bar-height, 47px) * var(--hltb-text-scale, 1)));
     position: absolute;
     border: 0;
     border-bottom: var(--hltb-border-width, 0) solid var(--hltb-border-color, rgba(61,68,80,.54));
