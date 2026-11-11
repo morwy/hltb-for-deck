@@ -125,10 +125,6 @@ export const STORE_BAR_CSS = `
     white-space: nowrap;
 }
 
-.hltb-store .hltb-details-item {
-    align-self: center;
-}
-
 /* Steam's button classes don't exist in the store page, so this copies the
    look of the library's Details button. */
 .hltb-store .hltb-details-btn {

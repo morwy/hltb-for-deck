@@ -57,8 +57,6 @@ export function showStoreBox(payload: StoreBoxPayload) {
     var info = document.createElement('div');
     info.className = 'hltb-info';
     var list = document.createElement('ul');
-    list.style.display = 'flex';
-    list.style.justifyContent = 'space-evenly';
 
     for (var i = 0; i < payload.rows.length; i++) {
         var item = document.createElement('li');
