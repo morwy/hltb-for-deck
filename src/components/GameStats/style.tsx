@@ -60,21 +60,16 @@ export default (
     background: var(--hltb-bar-bg, rgb(var(--hltb-bar-rgb, 14 20 27) / var(--hltb-bar-alpha, 0.25)));
     position: relative;
     border-bottom: var(--hltb-border-width, 2px) solid var(--hltb-border-color, rgba(61,68,80,.54));
-    padding-top: var(--hltb-pad-y, 5px);
-    padding-bottom: var(--hltb-pad-y, 5px);
     color: var(--hltb-text-color, inherit);
     text-shadow: var(--hltb-text-shadow, none);
     border-radius: var(--hltb-radius, 0);
 }
 
 .hltb-info-clean-default {
-    /* Keep room for Steam's button when the stats text is reduced. */
-    --hltb-clean-default-height: max(47px, calc(var(--hltb-bar-height, 47px) * var(--hltb-text-scale, 1)));
+    --hltb-clean-default-height: max(57px, calc(var(--hltb-bar-height, 57px) * var(--hltb-text-scale, 1)));
     position: absolute;
     border: 0;
     border-bottom: var(--hltb-border-width, 0) solid var(--hltb-border-color, rgba(61,68,80,.54));
-    padding-top: 0px;
-    padding-bottom: 0px;
     top: calc(0px - var(--hltb-clean-default-height));
     height: var(--hltb-clean-default-height);
     width: 100%;
@@ -91,8 +86,6 @@ export default (
     right: var(--hltb-clean-inset, 2.8vw);
     width: fit-content;
     height: fit-content;
-    padding-top: 0;
-    padding-bottom: 0;
     border: 0;
     border-bottom: var(--hltb-border-width, 0) solid var(--hltb-border-color, rgba(61,68,80,.54));
 }
@@ -104,7 +97,7 @@ export default (
 
 .hltb-info ul {
     list-style: none;
-    padding: var(--hltb-pad-y, 5px) var(--hltb-pad-x, 35px);
+    padding: var(--hltb-pad-y, 10px) var(--hltb-pad-x, 2.8vw);
     margin: 0px;
     display: flex;
     flex: 0 1 auto;    
