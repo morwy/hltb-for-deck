@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
+    backgroundStyleKey,
+    getBackgroundStyle,
     getPreference,
     getStyle,
     hideDetailsKey,
@@ -13,6 +15,14 @@ export type HLTBStyle =
     | 'clean-left'
     | 'clean-default'
     | null;
+
+export type HLTBBackgroundStyle = 'default' | 'blur';
+
+export function isCleanStyle(style: HLTBStyle): boolean {
+    return (
+        style === 'clean' || style === 'clean-left' || style === 'clean-default'
+    );
+}
 
 export const useStyle = () => {
     const [style, setStyle] = useState<HLTBStyle>(null);
@@ -31,6 +41,34 @@ export const useStyle = () => {
     }, []);
 
     return style;
+};
+
+export const useBackgroundStyle = (): HLTBBackgroundStyle => {
+    const [backgroundStyle, setBackgroundStyle] =
+        useState<HLTBBackgroundStyle>('default');
+    useEffect(() => {
+        let mounted = true;
+        let readSequence = 0;
+        const read = async () => {
+            const sequence = ++readSequence;
+            try {
+                const next = await getBackgroundStyle();
+                if (mounted && sequence === readSequence)
+                    setBackgroundStyle(next);
+            } catch {
+                if (mounted && sequence === readSequence)
+                    setBackgroundStyle('default');
+            }
+        };
+        read();
+        const unsubscribe = subscribeCache(backgroundStyleKey, read);
+        return () => {
+            mounted = false;
+            unsubscribe();
+        };
+    }, []);
+
+    return backgroundStyle;
 };
 
 export const usePreference = () => {

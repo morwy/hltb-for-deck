@@ -1,9 +1,59 @@
+import {
+    appDetailsClasses,
+    basicAppDetailsSectionStylerClasses,
+} from '@decky/ui';
+
+export function joinedBlurStyle(height: string, paddingTop: string) {
+    const container = `.${appDetailsClasses.InnerContainer}:has(> #hltb-for-deck.hltb-joined-blur)`;
+    const playSection = `.${basicAppDetailsSectionStylerClasses.PlaySection}`;
+
+    return (
+        <style>
+            {`
+#hltb-for-deck.hltb-joined-blur {
+    z-index: 2;
+}
+
+#hltb-for-deck.hltb-joined-blur > .hltb-info-clean-default {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: transparent !important;
+}
+
+#hltb-for-deck.hltb-joined-blur > .hltb-info-clean-default > ul {
+    background: transparent !important;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+${container} :has(> ${playSection}) {
+    margin-top: calc(0px - ${height});
+    padding-top: ${height};
+}
+
+${container} ${playSection} {
+    margin-top: calc(0px - ${height});
+    padding-top: calc(${paddingTop} + ${height});
+}
+`}
+        </style>
+    );
+}
+
 export default (
     <style>
         {`
 
 #hltb-for-deck{
     position: relative;
+}
+
+#hltb-for-deck.hltb-blur {
+    transform-style: preserve-3d;
+}
+
+#hltb-for-deck.hltb-blur > .hltb-info {
+    backdrop-filter: blur(8px);
 }
 
 .hltb-info {

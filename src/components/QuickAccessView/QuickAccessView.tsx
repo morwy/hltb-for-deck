@@ -6,16 +6,26 @@ import {
     DropdownItem,
     SliderField,
     ToggleField,
+    type SingleDropdownOption,
 } from '@decky/ui';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
+    backgroundStyleKey,
     clearCache,
+    getBackgroundStyle,
     hideDetailsKey,
     statPreferencesKey,
     styleKey,
     updateCache,
 } from '../../hooks/Cache';
-import { HLTBStyle, usePreference, useStyle } from '../../hooks/useStyle';
+import {
+    HLTBBackgroundStyle,
+    HLTBStyle,
+    isCleanStyle,
+    useBackgroundStyle,
+    usePreference,
+    useStyle,
+} from '../../hooks/useStyle';
 import { useStatPreferences } from '../../hooks/useStatPreferences';
 import useLocalization from '../../hooks/useLocalization';
 import { DEFAULT_APPEARANCE, hydrateAppearance } from '../../appearance';
@@ -34,6 +44,97 @@ export const QuickAccessView = () => {
     const [style, setStyle] = useState<HLTBStyle>(persistedStyle);
     useEffect(() => setStyle(persistedStyle), [persistedStyle]);
 
+    const persistedBackgroundStyle = useBackgroundStyle();
+    const [backgroundStyleSelection, setBackgroundStyleSelection] = useState(
+        persistedBackgroundStyle === 'blur' ? 1 : 0
+    );
+    const [backgroundStyleReady, setBackgroundStyleReady] = useState(false);
+    const [savingBackgroundStyle, setSavingBackgroundStyle] = useState(false);
+    const backgroundStyleRef = useRef<HLTBBackgroundStyle>(
+        persistedBackgroundStyle
+    );
+    const backgroundStyleReadyRef = useRef(false);
+    const backgroundStyleSavingRef = useRef(false);
+    const backgroundStyleMountedRef = useRef(true);
+    const backgroundStyleReadRef = useRef(0);
+
+    useEffect(() => {
+        backgroundStyleMountedRef.current = true;
+        return () => {
+            backgroundStyleMountedRef.current = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (backgroundStyleSavingRef.current) return;
+        let current = true;
+        const read = ++backgroundStyleReadRef.current;
+        void getBackgroundStyle().then(
+            (value) => {
+                if (
+                    !current ||
+                    !backgroundStyleMountedRef.current ||
+                    backgroundStyleSavingRef.current ||
+                    read !== backgroundStyleReadRef.current
+                )
+                    return;
+                backgroundStyleRef.current = value;
+                backgroundStyleReadyRef.current = true;
+                setBackgroundStyleSelection(value === 'blur' ? 1 : 0);
+                setBackgroundStyleReady(true);
+            },
+            (error) => {
+                if (current && backgroundStyleMountedRef.current)
+                    console.error(
+                        'HLTB - Failed to read background style',
+                        error
+                    );
+            }
+        );
+        return () => {
+            current = false;
+        };
+    }, [persistedBackgroundStyle, savingBackgroundStyle]);
+
+    const handleBackgroundStyleChange = async (
+        option: SingleDropdownOption
+    ) => {
+        if (
+            !backgroundStyleMountedRef.current ||
+            !backgroundStyleReadyRef.current ||
+            backgroundStyleSavingRef.current ||
+            (option.data !== 0 && option.data !== 1)
+        )
+            return false;
+        const next: HLTBBackgroundStyle =
+            option.data === 1 ? 'blur' : 'default';
+        if (next === backgroundStyleRef.current) return true;
+        let confirmed = backgroundStyleRef.current;
+        backgroundStyleSavingRef.current = true;
+        ++backgroundStyleReadRef.current;
+        setSavingBackgroundStyle(true);
+        setBackgroundStyleSelection(option.data);
+        try {
+            await updateCache(backgroundStyleKey, next);
+            confirmed = next;
+        } catch (error) {
+            console.error('HLTB - Failed to save background style', error);
+        }
+        try {
+            confirmed = await getBackgroundStyle();
+        } catch (error) {
+            console.error('HLTB - Failed to read background style', error);
+        } finally {
+            backgroundStyleRef.current = confirmed;
+            backgroundStyleSavingRef.current = false;
+            if (backgroundStyleMountedRef.current) {
+                setBackgroundStyleSelection(confirmed === 'blur' ? 1 : 0);
+                setSavingBackgroundStyle(false);
+            }
+        }
+        return confirmed === next;
+    };
+
     const persistedHideDetails = usePreference();
     const [hideDetails, setHideDetails] = useState(persistedHideDetails);
     useEffect(
@@ -44,6 +145,16 @@ export const QuickAccessView = () => {
     const preferences = useStatPreferences();
 
     const lang = useLocalization();
+
+    const handleResetAppearance = async () => {
+        if (
+            await handleBackgroundStyleChange({
+                data: 0,
+                label: lang('default'),
+            })
+        )
+            update({ ...DEFAULT_APPEARANCE, custom: true });
+    };
 
     const styleOptions = [
         { data: 0, label: lang('default'), value: 'default' },
@@ -156,6 +267,25 @@ export const QuickAccessView = () => {
                 </PanelSectionRow>
                 {appearance.custom && (
                     <>
+                        {isCleanStyle(style) && (
+                            <PanelSectionRow>
+                                <DropdownItem
+                                    label={lang('backgroundStyle')}
+                                    layout="below"
+                                    menuLabel={lang('backgroundStyle')}
+                                    rgOptions={[
+                                        { data: 0, label: lang('default') },
+                                        { data: 1, label: lang('blur') },
+                                    ]}
+                                    selectedOption={backgroundStyleSelection}
+                                    disabled={
+                                        !backgroundStyleReady ||
+                                        savingBackgroundStyle
+                                    }
+                                    onChange={handleBackgroundStyleChange}
+                                />
+                            </PanelSectionRow>
+                        )}
                         {(style === 'clean' || style === 'clean-left') && (
                             <PanelSectionRow>
                                 <SliderField
@@ -207,12 +337,11 @@ export const QuickAccessView = () => {
                         <PanelSectionRow>
                             <ButtonItem
                                 layout="below"
-                                onClick={() =>
-                                    update({
-                                        ...DEFAULT_APPEARANCE,
-                                        custom: true,
-                                    })
+                                disabled={
+                                    !backgroundStyleReady ||
+                                    savingBackgroundStyle
                                 }
+                                onClick={handleResetAppearance}
                             >
                                 {lang('resetAppearance')}
                             </ButtonItem>

@@ -4,6 +4,8 @@
     "cleanLeft": "\"Clean\" Left",
     "cleanDefault": "\"Clean\" Default",
     "hltbStyle": "HLTB Style",
+    "backgroundStyle": "Background style",
+    "blur": "Blur",
     "cleanDesc": "The \"Clean\" styles are intended to work with the CSS Loader Theme \"Clean Gameview\"",
     "appearance": "Appearance",
     "customizeAppearance": "Customize appearance",
