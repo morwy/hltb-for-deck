@@ -16,7 +16,7 @@ Currently this is an actively maintained fork of [original HLTB for Deck plugin]
 
 - On an app page, shows four main stats offered by How Long to Beat
 - Clicking **Details** will take you to their site for the game
-- Results are cached for two hours (cache can be cleared from QAM page for HLTB for Deck)
+- Results are cached for 12 hours (cache can be cleared from QAM page for HLTB for Deck)
 - Change the bar's appearance from the Quick Access Menu
 
 ## Appearance
