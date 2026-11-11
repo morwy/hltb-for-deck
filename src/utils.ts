@@ -33,7 +33,7 @@ export const isSteamGameType = (appType: number) => {
 };
 
 // Only game pages on the Steam store, e.g.
-// https://store.steampowered.com/app/673750/Super_Bunny_Man/
+// https://store.steampowered.com/app/1150690/OMORI/
 export const parseStoreAppId = (url: string): number | null => {
     const match =
         /^https:\/\/store\.steampowered\.com\/app\/(\d+)(?:[/?#]|$)/.exec(url);
