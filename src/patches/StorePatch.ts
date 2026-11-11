@@ -1,10 +1,9 @@
 // Shows the HLTB bar on Steam store game pages in Game Mode.
 //
-// The store is a separate browser tab, not part of Steam's React UI, so this
-// follows the approach IsThereAnyDeal for Deck and ProtonDB Badges use:
-// watch Steam's router for the store route, connect to the store tab through
-// the CEF debugger that Decky itself runs on, and show a store box pinned to the
-// page's body. Nothing depends on the store's own HTML.
+// The store is a separate browser tab, not part of Steam's React UI. This
+// watches Steam's router for the store route, connects to the store tab through
+// the CEF debugger that Decky itself runs on, and shows a store box pinned to
+// the page's body. Nothing depends on the store's own HTML.
 //
 // Everything that keeps running (socket, timers) belongs to one StoreSession,
 // which only exists while the store is open and is disposed on leaving it.

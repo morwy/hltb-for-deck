@@ -101,7 +101,7 @@ export const HLTB_BAR_CSS = `
 export default <style>{HLTB_BAR_CSS}</style>;
 
 // Extra rules for the store page box. The store page doesn't inherit Steam's
-// UI font or text color, and the stats stay on one line.
+// UI font or text color.
 export const STORE_BAR_CSS = `
 .hltb-store {
     font-family: "Motiva Sans", Arial, Helvetica, sans-serif;
@@ -110,8 +110,6 @@ export const STORE_BAR_CSS = `
     text-align: left;
 }
 
-/* No divider under the store box, so its bottom edge lines up with the
-   other plugins' badges. */
 .hltb-store .hltb-info {
     border-bottom: 0;
 }
@@ -127,7 +125,6 @@ export const STORE_BAR_CSS = `
     white-space: nowrap;
 }
 
-/* The details button sits at the end of the stats row. */
 .hltb-store .hltb-details-item {
     align-self: center;
 }
