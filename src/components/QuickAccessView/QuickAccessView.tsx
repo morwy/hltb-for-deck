@@ -11,11 +11,17 @@ import { useEffect, useState } from 'react';
 import {
     clearCache,
     hideDetailsKey,
+    showOnStoreKey,
     statPreferencesKey,
     styleKey,
     updateCache,
 } from '../../hooks/Cache';
-import { HLTBStyle, usePreference, useStyle } from '../../hooks/useStyle';
+import {
+    HLTBStyle,
+    usePreference,
+    useShowOnStore,
+    useStyle,
+} from '../../hooks/useStyle';
 import { useStatPreferences } from '../../hooks/useStatPreferences';
 import useLocalization from '../../hooks/useLocalization';
 import { DEFAULT_APPEARANCE, hydrateAppearance } from '../../appearance';
@@ -39,6 +45,13 @@ export const QuickAccessView = () => {
     useEffect(
         () => setHideDetails(persistedHideDetails),
         [persistedHideDetails]
+    );
+
+    const persistedShowOnStore = useShowOnStore();
+    const [showOnStore, setShowOnStore] = useState(persistedShowOnStore);
+    useEffect(
+        () => setShowOnStore(persistedShowOnStore),
+        [persistedShowOnStore]
     );
 
     const preferences = useStatPreferences();
@@ -104,6 +117,17 @@ export const QuickAccessView = () => {
                         onChange={(checked) => {
                             setHideDetails(checked);
                             updateCache(hideDetailsKey, checked);
+                        }}
+                    />
+                </PanelSectionRow>
+                <PanelSectionRow>
+                    <ToggleField
+                        label={lang('showOnStore')}
+                        description={lang('showOnStoreDesc')}
+                        checked={showOnStore}
+                        onChange={(checked) => {
+                            setShowOnStore(checked);
+                            updateCache(showOnStoreKey, checked);
                         }}
                     />
                 </PanelSectionRow>

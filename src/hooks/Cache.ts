@@ -9,6 +9,7 @@ export const styleKey = 'hltb-style';
 export const hideDetailsKey = 'hltb-hide-details';
 export const statPreferencesKey = 'hltb-stat-preferences';
 export const appearanceKey = 'hltb-appearance';
+export const showOnStoreKey = 'hltb-show-on-store';
 export const apiBootstrapCacheKey = 'hltb-api-bootstrap';
 
 export interface ApiBootstrapSearchAuth {
@@ -184,6 +185,11 @@ export async function getPreference(): Promise<boolean> {
     return hideViewDetails === null ? false : hideViewDetails;
 }
 
+export async function getShowOnStore(): Promise<boolean> {
+    const showOnStore = await localforage.getItem<boolean>(showOnStoreKey);
+    return typeof showOnStore === 'boolean' ? showOnStore : true;
+}
+
 export async function getStatPreferences(): Promise<StatPreferences | null> {
     const preferences = await localforage.getItem<StatPreferences>(
         statPreferencesKey
@@ -196,6 +202,7 @@ const PREFERENCE_KEYS = [
     hideDetailsKey,
     statPreferencesKey,
     appearanceKey,
+    showOnStoreKey,
 ];
 
 export async function clearCache(): Promise<void> {

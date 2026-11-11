@@ -5,10 +5,12 @@ import { patchAppPage } from './patches/LibraryApp';
 import { QuickAccessView } from './components/QuickAccessView/QuickAccessView';
 import contextMenuPatch from './patches/LibraryContextMenu';
 import { LoadingScreen } from './components/LoadingScreen';
+import { patchStore } from './patches/StorePatch';
 
 export default definePlugin(() => {
     const libraryContextMenuPatch = contextMenuPatch();
     const libraryAppPagePatch = patchAppPage();
+    const stopStorePatch = patchStore();
     routerHook.addRoute('/hltb-for-deck/loading', LoadingScreen);
     return {
         title: <div className={staticClasses.Title}>HLTB for Deck</div>,
@@ -16,6 +18,7 @@ export default definePlugin(() => {
         content: <QuickAccessView />,
         onDismount() {
             libraryContextMenuPatch?.unpatch();
+            stopStorePatch();
             routerHook.removePatch('/library/app/:appid', libraryAppPagePatch);
             routerHook.removeRoute('/hltb-for-deck/loading');
         },

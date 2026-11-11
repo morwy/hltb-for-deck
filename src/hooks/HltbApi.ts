@@ -552,7 +552,16 @@ async function fetchSearchResults(appName: string) {
     return results;
 }
 
-async function fetchEnglishSteamAppName(appId: number): Promise<string | null> {
+export interface SteamAppDetails {
+    // Normalized English name, ready for an HLTB search.
+    name: string;
+    // Steam's app type, e.g. "game", "dlc", "demo" or "music".
+    type: string;
+}
+
+export async function fetchSteamAppDetails(
+    appId: number
+): Promise<SteamAppDetails | null> {
     try {
         const response = await fetchNoCors(
             `https://store.steampowered.com/api/appdetails?appids=${appId}&l=en`,
@@ -590,18 +599,26 @@ async function fetchEnglishSteamAppName(appId: number): Promise<string | null> {
             return null;
         }
 
-        const name = (details.data as Record<string, unknown> | undefined)
-            ?.name;
+        const appDetails = details.data as Record<string, unknown> | undefined;
+        const name = appDetails?.name;
         if (typeof name !== 'string') {
             console.error('HLTB - missing Steam app name:', details);
             return null;
         }
 
-        return normalize(name);
+        const type = appDetails?.type;
+        return {
+            name: normalize(name),
+            type: typeof type === 'string' ? type : '',
+        };
     } catch (error) {
         console.error('HLTB - error fetching English Steam app name:', error);
         return null;
     }
+}
+
+async function fetchEnglishSteamAppName(appId: number): Promise<string | null> {
+    return (await fetchSteamAppDetails(appId))?.name ?? null;
 }
 
 async function fetchSearchResultsState(

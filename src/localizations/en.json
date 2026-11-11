@@ -19,6 +19,8 @@
     "resetAppearance": "Reset appearance",
     "hideViewDetails": "Hide \"Details\"",
     "hideViewDetailsDesc": "Hides \"Details\" button on HLTB Stats",
+    "showOnStore": "Show on store pages",
+    "showOnStoreDesc": "Shows HLTB stats on game pages in the Steam store",
     "toggleMainStat": "Toggle main stat",
     "toggleMainStatDesc": "Shows/Hides just the main stat",
     "toggleMainPlusStat": "Toggle main+ stat",
