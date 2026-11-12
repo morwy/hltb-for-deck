@@ -21,9 +21,16 @@ Currently this is an actively maintained fork of [original HLTB for Deck plugin]
 
 ## Appearance
 
-In the Quick Access Menu, turn on **Customize appearance** to change the bar's opacity, text size, shadow, and border. Turn it off to use the original appearance without losing your choices. The bottom border option is available only for the Default layout.
+The following settings are available in the Quick Access Menu:
 
-CSS Loader themes can override the bar using properties such as `--hltb-bar-alpha` and `--hltb-text-scale`. Add `!important` to override a choice made in the menu.
+- **HLTB Style**: The "Clean" styles are intended to work with the CSS Loader Theme "Clean Gameview"
+- **Customize appearance**: Enable custom colors, opacity and text size for the HLTB bar
+- **Background style**: Choose Default or Blur for Clean layouts
+- **Background opacity**: Darkens the bar so stats stay readable over bright hero art (Clean and Clean Left)
+- **Text shadow**: Adds a shadow behind the stats for extra contrast
+- **Text size**: Scales the stat numbers and labels
+- **Bottom border**: Shows a divider line under the HLTB bar (Default)
+- **Reset appearance**: Restore the default appearance settings
 
 **Clear Cache** removes cached game results, not your settings.
 

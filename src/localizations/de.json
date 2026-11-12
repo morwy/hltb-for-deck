@@ -4,6 +4,8 @@
     "cleanLeft": "\"Schlicht\" Links",
     "cleanDefault": "\"Schlicht\" Standard",
     "hltbStyle": "HLTB Stil",
+    "backgroundStyle": "Hintergrundstil",
+    "blur": "Weichgezeichnet",
     "cleanDesc": "Der \"Schlichte\" Stil sind für die Verwendung mit dem CSS Loader Theme \"Clean Gameview\" gedacht",
     "appearance": "Darstellung",
     "customizeAppearance": "Darstellung anpassen",
