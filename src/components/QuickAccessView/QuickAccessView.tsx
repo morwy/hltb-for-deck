@@ -12,6 +12,7 @@ import {
     backgroundStyleKey,
     clearCache,
     hideDetailsKey,
+    showOnStoreKey,
     statPreferencesKey,
     styleKey,
     updateCache,
@@ -22,6 +23,7 @@ import {
     isCleanStyle,
     useBackgroundStyle,
     usePreference,
+    useShowOnStore,
     useStyle,
 } from '../../hooks/useStyle';
 import { useStatPreferences } from '../../hooks/useStatPreferences';
@@ -56,6 +58,13 @@ export const QuickAccessView = () => {
     useEffect(
         () => setHideDetails(persistedHideDetails),
         [persistedHideDetails]
+    );
+
+    const persistedShowOnStore = useShowOnStore();
+    const [showOnStore, setShowOnStore] = useState(persistedShowOnStore);
+    useEffect(
+        () => setShowOnStore(persistedShowOnStore),
+        [persistedShowOnStore]
     );
 
     const preferences = useStatPreferences();
@@ -132,6 +141,17 @@ export const QuickAccessView = () => {
                         onChange={(checked) => {
                             setHideDetails(checked);
                             updateCache(hideDetailsKey, checked);
+                        }}
+                    />
+                </PanelSectionRow>
+                <PanelSectionRow>
+                    <ToggleField
+                        label={lang('showOnStore')}
+                        description={lang('showOnStoreDesc')}
+                        checked={showOnStore}
+                        onChange={(checked) => {
+                            setShowOnStore(checked);
+                            updateCache(showOnStoreKey, checked);
                         }}
                     />
                 </PanelSectionRow>

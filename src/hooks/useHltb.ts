@@ -24,6 +24,42 @@ function needCacheUpdate(cache: HLTBStats) {
     return hoursBetweenDates > 12 || hasVersionChanged(cache);
 }
 
+// Returns cached stats while they're fresh, otherwise fetches and caches them.
+// Returns null if nothing fresh is cached and the fetch fails.
+export async function getHltbStats(
+    appId: number,
+    appName: string,
+    isSteamGame: boolean
+): Promise<HLTBStats | null> {
+    const cache = await getCache<HLTBStats>(`${appId}`);
+    if (cache && !needCacheUpdate(cache)) {
+        return cache;
+    }
+
+    console.log(`Getting HLTB data for ${appId} and "${appName}".`);
+    const hltbGameStats = await fetchHltbGameStats(
+        appName,
+        isSteamGame ? appId : undefined,
+        getCachedGameId(cache)
+    );
+    if (!hltbGameStats) {
+        return null;
+    }
+
+    const newStats = {
+        ...hltbGameStats,
+        ...{
+            showStats: cache?.showStats ?? true,
+            version: statsVersion,
+        },
+    };
+    updateCache(`${appId}`, newStats);
+    console.log(
+        `HLTB data updated for ${appId}. Using HLTB game id ${hltbGameStats.gameId}.`
+    );
+    return newStats;
+}
+
 // Hook to get data from HLTB
 function useHltb(appId: number, appName: string, isSteamGame: boolean) {
     const [stats, setStats] = useState<HLTBStats>({
@@ -39,30 +75,9 @@ function useHltb(appId: number, appName: string, isSteamGame: boolean) {
 
     useEffect(() => {
         const getData = async () => {
-            const cache = await getCache<HLTBStats>(`${appId}`);
-            if (cache && !needCacheUpdate(cache)) {
-                setStats(cache);
-            } else {
-                console.log(`Getting HLTB data for ${appId} and "${appName}".`);
-                const hltbGameStats = await fetchHltbGameStats(
-                    appName,
-                    isSteamGame ? appId : undefined,
-                    getCachedGameId(cache)
-                );
-                if (hltbGameStats) {
-                    const newStats = {
-                        ...hltbGameStats,
-                        ...{
-                            showStats: cache?.showStats ?? true,
-                            version: statsVersion,
-                        },
-                    };
-                    setStats(newStats);
-                    updateCache(`${appId}`, newStats);
-                    console.log(
-                        `HLTB data updated for ${appId}. Using HLTB game id ${hltbGameStats.gameId}.`
-                    );
-                }
+            const newStats = await getHltbStats(appId, appName, isSteamGame);
+            if (newStats) {
+                setStats(newStats);
             }
         };
         if (appId) {

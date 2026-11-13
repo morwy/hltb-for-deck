@@ -7,16 +7,7 @@ import {
 import { routerHook } from '@decky/api';
 import { ReactElement } from 'react';
 import { GameStats } from '../components/GameStats/GameStats';
-import { normalize } from '../utils';
-
-function isSteamGameType(appType: number) {
-    switch (appType) {
-        case 1: // Game
-        case 8: // Demo
-            return true;
-    }
-    return false;
-}
+import { isSteamGameType, normalize } from '../utils';
 
 // I hate this method
 export const patchAppPage = () => {

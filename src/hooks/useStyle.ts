@@ -3,8 +3,10 @@ import {
     backgroundStyleKey,
     getBackgroundStyle,
     getPreference,
+    getShowOnStore,
     getStyle,
     hideDetailsKey,
+    showOnStoreKey,
     styleKey,
     subscribeCache,
 } from './Cache';
@@ -88,4 +90,23 @@ export const usePreference = () => {
     }, []);
 
     return pref;
+};
+
+export const useShowOnStore = () => {
+    const [showOnStore, setShowOnStore] = useState<boolean>(true);
+    useEffect(() => {
+        let mounted = true;
+        const read = async () => {
+            const next = await getShowOnStore();
+            if (mounted) setShowOnStore(next);
+        };
+        read();
+        const unsubscribe = subscribeCache(showOnStoreKey, read);
+        return () => {
+            mounted = false;
+            unsubscribe();
+        };
+    }, []);
+
+    return showOnStore;
 };

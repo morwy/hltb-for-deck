@@ -40,9 +40,7 @@ ${container} ${playSection} {
     );
 }
 
-export default (
-    <style>
-        {`
+export const HLTB_BAR_CSS = `
 
 #hltb-for-deck{
     position: relative;
@@ -144,6 +142,53 @@ export default (
     gap: 0;
     justify-content: center;
 }
-`}
-    </style>
-);
+`;
+
+export default <style>{HLTB_BAR_CSS}</style>;
+
+// Extra rules for the store page box. The store page doesn't inherit Steam's
+// UI font or text color.
+export const STORE_BAR_CSS = `
+.hltb-store {
+    font-family: "Motiva Sans", Arial, Helvetica, sans-serif;
+    color: #dcdedf;
+    line-height: normal;
+    text-align: left;
+}
+
+.hltb-store .hltb-info {
+    border-bottom: 0;
+}
+
+.hltb-store .hltb-info ul {
+    flex-wrap: nowrap;
+    justify-content: space-evenly;
+    gap: 16px;
+}
+
+.hltb-store .hltb-info li {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+/* Steam's button classes don't exist in the store page, so this copies the
+   look of the library's Details button. */
+.hltb-store .hltb-details-btn {
+    background: rgb(61, 68, 80);
+    color: #ffffff;
+    border: 0;
+    border-radius: 5px;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    line-height: normal;
+}
+
+.hltb-store .hltb-details-btn:focus,
+.hltb-store .hltb-details-btn:hover {
+    background: #ffffff;
+    color: #000000;
+    outline: none;
+}
+`;

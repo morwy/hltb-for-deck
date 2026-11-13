@@ -19,6 +19,7 @@ import { useStatPreferences } from '../../hooks/useStatPreferences';
 import useLocalization from '../../hooks/useLocalization';
 import { hydrateAppearance, toStyleVars } from '../../appearance';
 import { useAppearance } from '../../hooks/useAppearance';
+import { hasAnyStat } from '../../utils';
 
 interface GameStatsProps {
     game: string;
@@ -143,10 +144,7 @@ export const GameStats = ({ game, appId, id, isSteamGame }: GameStatsProps) => {
     const baseClass = hltbStyle === null ? 'hltb-info-absolute' : 'hltb-info';
     // Hide if there are no stats, show stats is false, all stats are hidden, or the game is launching
     const hide =
-        (mainStat === mainPlusStat &&
-            mainPlusStat === completeStat &&
-            completeStat === allStylesStat &&
-            allStylesStat === '--') ||
+        !hasAnyStat({ mainStat, mainPlusStat, completeStat, allStylesStat }) ||
         !showStats ||
         gameLaunching;
     const [joinedBlur, setJoinedBlur] = useState<JoinedBlur | null>(null);
