@@ -9,6 +9,7 @@ import {
 } from '@decky/ui';
 import { useEffect, useState } from 'react';
 import {
+    backgroundStyleKey,
     clearCache,
     hideDetailsKey,
     showOnStoreKey,
@@ -17,7 +18,10 @@ import {
     updateCache,
 } from '../../hooks/Cache';
 import {
+    HLTBBackgroundStyle,
     HLTBStyle,
+    isCleanStyle,
+    useBackgroundStyle,
     usePreference,
     useShowOnStore,
     useStyle,
@@ -40,6 +44,15 @@ export const QuickAccessView = () => {
     const [style, setStyle] = useState<HLTBStyle>(persistedStyle);
     useEffect(() => setStyle(persistedStyle), [persistedStyle]);
 
+    const persistedBackgroundStyle = useBackgroundStyle();
+    const [backgroundStyle, setBackgroundStyle] = useState<HLTBBackgroundStyle>(
+        persistedBackgroundStyle
+    );
+    useEffect(
+        () => setBackgroundStyle(persistedBackgroundStyle),
+        [persistedBackgroundStyle]
+    );
+
     const persistedHideDetails = usePreference();
     const [hideDetails, setHideDetails] = useState(persistedHideDetails);
     useEffect(
@@ -58,11 +71,22 @@ export const QuickAccessView = () => {
 
     const lang = useLocalization();
 
+    const handleResetAppearance = () => {
+        setBackgroundStyle('default');
+        updateCache(backgroundStyleKey, 'default');
+        update({ ...DEFAULT_APPEARANCE, custom: true });
+    };
+
     const styleOptions = [
         { data: 0, label: lang('default'), value: 'default' },
         { data: 1, label: lang('clean'), value: 'clean' },
         { data: 2, label: lang('cleanLeft'), value: 'clean-left' },
         { data: 3, label: lang('cleanDefault'), value: 'clean-default' },
+    ] as const;
+
+    const backgroundStyleOptions = [
+        { data: 0, label: lang('default'), value: 'default' },
+        { data: 1, label: lang('blur'), value: 'blur' },
     ] as const;
 
     const toggleShowMain = () => {
@@ -180,20 +204,56 @@ export const QuickAccessView = () => {
                 </PanelSectionRow>
                 {appearance.custom && (
                     <>
-                        <PanelSectionRow>
-                            <SliderField
-                                label={lang('barOpacity')}
-                                description={lang('barOpacityDesc')}
-                                value={appearance.barAlpha}
-                                min={0}
-                                max={100}
-                                step={5}
-                                showValue
-                                valueSuffix="%"
-                                resetValue={DEFAULT_APPEARANCE.barAlpha}
-                                onChange={(v) => update({ barAlpha: v })}
-                            />
-                        </PanelSectionRow>
+                        {isCleanStyle(style) && (
+                            <PanelSectionRow>
+                                <DropdownItem
+                                    label={lang('backgroundStyle')}
+                                    layout="below"
+                                    menuLabel={lang('backgroundStyle')}
+                                    rgOptions={backgroundStyleOptions.map(
+                                        (o) => ({
+                                            data: o.data,
+                                            label: o.label,
+                                        })
+                                    )}
+                                    selectedOption={
+                                        backgroundStyleOptions.find(
+                                            (o) => o.value === backgroundStyle
+                                        )?.data || 0
+                                    }
+                                    onChange={(newVal: {
+                                        data: number;
+                                        label: string;
+                                    }) => {
+                                        const newBackgroundStyle =
+                                            backgroundStyleOptions.find(
+                                                (o) => o.data === newVal.data
+                                            )?.value || 'default';
+                                        setBackgroundStyle(newBackgroundStyle);
+                                        updateCache(
+                                            backgroundStyleKey,
+                                            newBackgroundStyle
+                                        );
+                                    }}
+                                />
+                            </PanelSectionRow>
+                        )}
+                        {(style === 'clean' || style === 'clean-left') && (
+                            <PanelSectionRow>
+                                <SliderField
+                                    label={lang('barOpacity')}
+                                    description={lang('barOpacityDesc')}
+                                    value={appearance.barAlpha}
+                                    min={0}
+                                    max={100}
+                                    step={1}
+                                    showValue
+                                    valueSuffix="%"
+                                    resetValue={DEFAULT_APPEARANCE.barAlpha}
+                                    onChange={(v) => update({ barAlpha: v })}
+                                />
+                            </PanelSectionRow>
+                        )}
                         <PanelSectionRow>
                             <ToggleField
                                 label={lang('textShadow')}
@@ -229,12 +289,7 @@ export const QuickAccessView = () => {
                         <PanelSectionRow>
                             <ButtonItem
                                 layout="below"
-                                onClick={() =>
-                                    update({
-                                        ...DEFAULT_APPEARANCE,
-                                        custom: true,
-                                    })
-                                }
+                                onClick={handleResetAppearance}
                             >
                                 {lang('resetAppearance')}
                             </ButtonItem>

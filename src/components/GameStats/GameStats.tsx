@@ -1,13 +1,19 @@
 import {
     appDetailsClasses,
     appDetailsHeaderClasses,
+    basicAppDetailsSectionStylerClasses,
     findClassModule,
     Focusable,
     Navigation,
 } from '@decky/ui';
 import useHltb from '../../hooks/useHltb';
-import { usePreference, useStyle } from '../../hooks/useStyle';
-import style from './style';
+import {
+    isCleanStyle,
+    useBackgroundStyle,
+    usePreference,
+    useStyle,
+} from '../../hooks/useStyle';
+import style, { joinedBlurStyle } from './style';
 import { useEffect, useRef, useState } from 'react';
 import { useStatPreferences } from '../../hooks/useStatPreferences';
 import useLocalization from '../../hooks/useLocalization';
@@ -25,6 +31,11 @@ interface GameStatsProps {
 const detailsButtonClasses =
     findClassModule((classes) => classes.DeckVerifiedInfo && classes.Details) ??
     {};
+
+interface JoinedBlur {
+    height: string;
+    paddingTop: string;
+}
 
 function findTopCapsuleParent(ref: HTMLDivElement | null): Element | null {
     const children = ref?.parentElement?.children;
@@ -124,6 +135,11 @@ export const GameStats = ({ game, appId, id, isSteamGame }: GameStatsProps) => {
     const { showMain, showMainPlus, showComplete, showAllStyles } =
         useStatPreferences();
     const hltbStyle = useStyle();
+    const backgroundStyle = useBackgroundStyle();
+    const blurEnabled =
+        appearance.custom &&
+        isCleanStyle(hltbStyle) &&
+        backgroundStyle === 'blur';
     const hideDetails = usePreference();
     const baseClass = hltbStyle === null ? 'hltb-info-absolute' : 'hltb-info';
     // Hide if there are no stats, show stats is false, all stats are hidden, or the game is launching
@@ -131,6 +147,63 @@ export const GameStats = ({ game, appId, id, isSteamGame }: GameStatsProps) => {
         !hasAnyStat({ mainStat, mainPlusStat, completeStat, allStylesStat }) ||
         !showStats ||
         gameLaunching;
+    const [joinedBlur, setJoinedBlur] = useState<JoinedBlur | null>(null);
+    useEffect(() => {
+        if (!blurEnabled || hltbStyle !== 'clean-default' || hide) {
+            setJoinedBlur(null);
+            return;
+        }
+        const root = ref.current;
+        const bar = root?.querySelector<HTMLElement>('.hltb-info');
+        const playClass = basicAppDetailsSectionStylerClasses.PlaySection;
+        const play = playClass
+            ? root?.parentElement?.querySelector<HTMLElement>(
+                  `.${CSS.escape(playClass)}`
+              )
+            : null;
+        if (!bar || !play) return;
+
+        let current: JoinedBlur | null = null;
+        const refresh = () => {
+            const nativeStyle = getComputedStyle(play);
+            const radius =
+                nativeStyle.backdropFilter.match(/blur\(([\d.]+)px\)/);
+            if (!radius || Number(radius[1]) <= 0) {
+                current = null;
+                setJoinedBlur(null);
+                return;
+            }
+            const next = {
+                height: getComputedStyle(bar).height,
+                paddingTop: current?.paddingTop ?? nativeStyle.paddingTop,
+            };
+            if (
+                current?.height === next.height &&
+                current.paddingTop === next.paddingTop
+            )
+                return;
+            current = next;
+            setJoinedBlur(next);
+        };
+        refresh();
+        const resize = new ResizeObserver(refresh);
+        resize.observe(bar);
+        const theme = new MutationObserver(refresh);
+        theme.observe(document.head, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+        });
+        return () => {
+            resize.disconnect();
+            theme.disconnect();
+        };
+    }, [blurEnabled, hltbStyle, hide]);
+    const joinNativeBlur =
+        blurEnabled &&
+        hltbStyle === 'clean-default' &&
+        !hide &&
+        joinedBlur !== null;
     let hltbInfoStyle = '';
     switch (hltbStyle) {
         case 'clean':
@@ -144,8 +217,19 @@ export const GameStats = ({ game, appId, id, isSteamGame }: GameStatsProps) => {
     const hltbInfoPosition =
         hltbStyle === 'clean-left' ? 'hltb-info-clean-left' : '';
     return (
-        <div id={id} ref={ref} style={{ display: hide ? 'none' : 'block' }}>
+        <div
+            id={id}
+            ref={ref}
+            className={
+                blurEnabled
+                    ? `hltb-blur${joinNativeBlur ? ' hltb-joined-blur' : ''}`
+                    : undefined
+            }
+            style={{ display: hide ? 'none' : 'block' }}
+        >
             {style}
+            {joinNativeBlur &&
+                joinedBlurStyle(joinedBlur.height, joinedBlur.paddingTop)}
             <div
                 className={`${baseClass} ${hltbInfoStyle} ${hltbInfoPosition}`}
                 style={toStyleVars(appearance)}

@@ -1,11 +1,12 @@
 import localforage from 'localforage';
 import { Appearance, normalizeAppearance } from '../appearance';
-import { HLTBStyle } from './useStyle';
+import { HLTBBackgroundStyle, HLTBStyle } from './useStyle';
 import { HLTBStats } from './GameInfoData';
 import { StatPreferences } from './useStatPreferences';
 
 const database = 'hltb-for-deck';
 export const styleKey = 'hltb-style';
+export const backgroundStyleKey = 'hltb-background-style';
 export const hideDetailsKey = 'hltb-hide-details';
 export const statPreferencesKey = 'hltb-stat-preferences';
 export const appearanceKey = 'hltb-appearance';
@@ -175,6 +176,13 @@ export async function getStyle(): Promise<HLTBStyle> {
     return 'default';
 }
 
+export async function getBackgroundStyle(): Promise<HLTBBackgroundStyle> {
+    const backgroundStyle = await localforage.getItem<unknown>(
+        backgroundStyleKey
+    );
+    return backgroundStyle === 'blur' ? 'blur' : 'default';
+}
+
 export async function getAppearance(): Promise<Appearance> {
     const appearance = await localforage.getItem<unknown>(appearanceKey);
     return normalizeAppearance(appearance);
@@ -199,6 +207,7 @@ export async function getStatPreferences(): Promise<StatPreferences | null> {
 
 const PREFERENCE_KEYS = [
     styleKey,
+    backgroundStyleKey,
     hideDetailsKey,
     statPreferencesKey,
     appearanceKey,
