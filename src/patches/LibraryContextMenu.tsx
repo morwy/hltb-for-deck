@@ -3,10 +3,10 @@ import {
     afterPatch,
     fakeRenderComponent,
     findInReactTree,
-    findModuleChild,
     Patch,
     findInTree,
     removeHookStubs,
+    findModuleByExport,
 } from '@decky/ui';
 
 import { HLTBContextMenuItem } from '../components/HLTBContextMenuItem';
@@ -107,28 +107,20 @@ const getFunctionSource = (value: unknown): string => {
 };
 
 const findLibraryContextMenu = () => {
-    const component = findModuleChild((module) => {
-        if (!module || typeof module !== 'object') {
+    const module = findModuleByExport((exp) => {
+        if (!exp || typeof exp !== 'function') {
             return;
         }
 
-        try {
-            const exports = Object.values(module);
-            if (
-                exports.some((value) =>
-                    getFunctionSource(value).includes('().LibraryContextMenu')
-                )
-            ) {
-                return exports.find((value) =>
-                    getFunctionSource(value).includes('navigator:')
-                );
-            }
-        } catch {
+        if (!getFunctionSource(exp).includes('().LibraryContextMenu')) {
             return;
         }
 
-        return;
+        return exp;
     });
+    const component = Object.values(module).find((value) =>
+        getFunctionSource(value).includes('navigator:')
+    );
 
     if (typeof component !== 'function') {
         console.warn('HLTB - LibraryContextMenu component not found');
